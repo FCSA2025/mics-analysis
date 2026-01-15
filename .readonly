@@ -1,0 +1,16 @@
+========================================
+READ-ONLY ANALYSIS WORKSPACE
+========================================
+
+This marker file indicates that this workspace
+is for READ-ONLY analysis only.
+
+DO NOT modify the MICS# source code at:
+../CloudMICS# 20230116/MICS#
+
+All analysis output goes to:
+./reports/
+
+Created: January 2026
+========================================
+

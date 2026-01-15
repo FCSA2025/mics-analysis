@@ -1,0 +1,9 @@
+# Diagrams Directory
+
+This directory contains architecture and flow diagrams for the MICS# system.
+
+Suggested formats:
+- Mermaid (.mmd) - for version-controlled text diagrams
+- Draw.io (.drawio) - for complex visual diagrams
+- PlantUML (.puml) - for UML diagrams
+

@@ -1,0 +1,16 @@
+{
+  "name": "mics-analyzer",
+  "version": "1.0.0",
+  "description": "Read-only code analysis tool for MICS# (Microwave Interference Calculation System)",
+  "main": "analyzer.js",
+  "scripts": {
+    "analyze": "node analyzer.js",
+    "report": "node report-generator.js",
+    "full": "node analyzer.js && node report-generator.js",
+    "test-path": "node -e \"const c=require('./config'); console.log('MICS# Path:', c.MICS_PATH); console.log('Exists:', require('fs').existsSync(c.MICS_PATH));\""
+  },
+  "keywords": ["code-analysis", "csharp", "mics", "read-only"],
+  "author": "",
+  "license": "MIT"
+}
+
