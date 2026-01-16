@@ -509,8 +509,10 @@ INNER JOIN tsip.ant_disc_lookup lookup
 
 **Storage Estimate**:
 - **Per antenna**: ~1,800 rows (0.1° resolution for 0-180°)
-- **For 1,000 antennas**: ~1.8 million rows
-- **Storage**: ~50-100 MB (depending on data types)
+- **Current**: 3,500 antennas × 1,800 rows = **6.3 million rows**
+- **Storage**: ~328 MB (data) + indexes = **~500 MB - 1 GB**
+- **Growth**: ~30 antennas/year = ~30 MB/year
+- **After 10 years**: 3,800 antennas = **~1.1 GB**
 
 **Maintenance Strategy**:
 ```sql
