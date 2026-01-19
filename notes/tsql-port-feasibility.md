@@ -1,5 +1,9 @@
 # TSIP to T-SQL Port Feasibility Analysis
 
+⚠️ **SUPERSEDED** - This document has been superseded by `T-SQL-PORT-MASTER-PLAN.md` which contains the consolidated project status, decisions, and roadmap. This document is kept for historical reference.
+
+---
+
 This document analyzes the feasibility of recreating the TSIP interference analysis process entirely in T-SQL/SQL Server.
 
 ---

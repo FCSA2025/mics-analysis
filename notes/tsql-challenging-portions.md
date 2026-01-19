@@ -1,5 +1,9 @@
 # T-SQL Port: Detailed Analysis of Challenging Portions
 
+⚠️ **PARTIALLY SUPERSEDED** - Much of the information in this document has been moved to dedicated solution documents. See `T-SQL-PORT-MASTER-PLAN.md` for current status and links to solution documents. This document is kept for historical reference.
+
+---
+
 This document provides an in-depth analysis of the most challenging aspects of porting TSIP to T-SQL, with detailed explanations, code examples, and implementation strategies.
 
 ---

@@ -1,5 +1,9 @@
 # T-SQL Port: Remaining Challenges Summary
 
+⚠️ **SUPERSEDED** - This document has been superseded by `T-SQL-PORT-MASTER-PLAN.md` which contains the consolidated project status, decisions, and roadmap. This document is kept for historical reference.
+
+---
+
 This document summarizes the remaining challenges for porting TSIP to T-SQL, their current status, and what still needs to be addressed.
 
 ---
