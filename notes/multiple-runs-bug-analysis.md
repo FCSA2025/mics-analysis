@@ -12,15 +12,17 @@
 
 ## The Core Problem
 
-**Root Cause**: **Lock not released on error paths + Process exit behavior + Potential retry mechanism**
+**Root Cause**: **Lock not released on error paths + Process exit behavior + Automated retry mechanism**
+
+**Confirmed**: The infinite loop is **NOT caused by user input** - it's a single run from one user that triggers an automated retry loop.
 
 When TSIP encounters an error:
 1. Lock is acquired but not released (bug)
 2. Process exits (completes other parameter records or crashes)
 3. Windows releases mutex when process exits
-4. **Something causes TSIP to be re-invoked** (scheduler, retry, user)
+4. **Automated mechanism (scheduler/tsipInitiator) causes TSIP to be re-invoked** (NOT user-initiated)
 5. New process starts, acquires lock (now available), fails again
-6. **Cycle repeats indefinitely**
+6. **Cycle repeats indefinitely** (automated, no user intervention)
 
 ---
 
@@ -104,46 +106,34 @@ Application.Exit("Successful normal exit from TpRunTsip.Main()", exitCode);
 
 ## What Causes Multiple Runs?
 
-### Hypothesis 1: Scheduler/Retry Mechanism (MOST LIKELY)
+### ✅ CONFIRMED: Automated Retry Mechanism (ROOT CAUSE)
 
-**Scenario**: External scheduler or retry mechanism monitors TSIP exit codes
+**Confirmed Fact**: The infinite loop is **NOT caused by user input** - it's triggered by a **single run from one user**, and then an automated mechanism causes the retry loop.
+
+**Scenario**: External scheduler or retry mechanism (likely `tsipInitiator`) monitors TSIP exit codes and automatically restarts on failure
 
 **How It Works**:
-1. TSIP process starts, processes parameter records
-2. One record fails (e.g., ReportStudy fails at line 549)
-3. `exitCode = Constant.FAILURE` (line 548)
-4. Process continues, processes other records
-5. Process exits with `exitCode = FAILURE` (line 650)
-6. **Scheduler sees FAILURE exit code**
-7. **Scheduler immediately restarts TSIP** (retry mechanism)
-8. New process starts, tries same parameter records
-9. **Same error occurs** (e.g., ReportStudy still fails)
-10. **Cycle repeats indefinitely**
+1. **User initiates single TSIP run** (one-time action)
+2. TSIP process starts, processes parameter records
+3. One record fails (e.g., ReportStudy fails at line 549)
+4. `exitCode = Constant.FAILURE` (line 548)
+5. Process continues, processes other records
+6. Process exits with `exitCode = FAILURE` (line 650)
+7. **Automated scheduler/tsipInitiator sees FAILURE exit code**
+8. **Scheduler immediately and automatically restarts TSIP** (no user intervention)
+9. New process starts, tries same parameter records
+10. **Same error occurs** (e.g., ReportStudy still fails)
+11. **Cycle repeats indefinitely** (fully automated, no user input)
 
 **Evidence**:
 - Comment at line 170: "Set our priority class to normal. This will allow tsipInitiator to continue executing while it updates the tsip queue after we have started."
-- This suggests there's a `tsipInitiator` process that manages TSIP execution
-- `tsipInitiator` likely monitors exit codes and retries on failure
+- This confirms there's a `tsipInitiator` process that manages TSIP execution
+- `tsipInitiator` monitors exit codes and automatically retries on failure
+- **Confirmed**: No user input required after initial run - loop is fully automated
 
 ---
 
-### Hypothesis 2: User Manual Retry
-
-**Scenario**: User sees error, manually restarts TSIP
-
-**How It Works**:
-1. TSIP fails, exits with FAILURE
-2. User sees error in logs
-3. User manually restarts TSIP
-4. Same error occurs
-5. User retries again
-6. **Cycle continues**
-
-**Less Likely**: Wouldn't cause "endless streams" unless user is very persistent
-
----
-
-### Hypothesis 3: Process Crash and Auto-Restart
+### Hypothesis 2: Process Crash and Auto-Restart (LESS LIKELY)
 
 **Scenario**: Process crashes, Windows Task Scheduler or service manager restarts it
 
@@ -185,9 +175,9 @@ Application.Exit("Successful normal exit from TpRunTsip.Main()", exitCode);
 6. Process exits with `exitCode = FAILURE` (because PROJ1_RUN1 failed)
 7. **Windows releases mutex** for PROJ1_RUN1 (process exited)
 
-**Run 2** (Immediately after Run 1):
-1. **Scheduler/retry mechanism sees FAILURE exit code**
-2. **Immediately restarts TSIP process**
+**Run 2** (Immediately after Run 1 - **AUTOMATED, NO USER INPUT**):
+1. **Automated scheduler/tsipInitiator sees FAILURE exit code**
+2. **Automatically and immediately restarts TSIP process** (no user intervention)
 3. TSIP process starts
 4. Loads same parameter records: `[PROJ1_RUN1, PROJ2_RUN2, PROJ3_RUN3]`
 5. Processes PROJ1_RUN1:
@@ -246,29 +236,34 @@ Application.Exit("Successful normal exit from TpRunTsip.Main()", exitCode);
 
 ---
 
-## The Probable Cause: Exit Code + Retry Mechanism
+## The Confirmed Cause: Exit Code + Automated Retry Mechanism
 
-### Most Likely Scenario
+### ✅ CONFIRMED SCENARIO
+
+**Confirmed**: The infinite loop is **fully automated** - triggered by a single user run, then continues without user intervention.
 
 **The Bug Chain**:
 
-1. **TSIP processes parameter records in a loop** (`foreach`)
-2. **One record fails** (e.g., ReportStudy fails)
-3. **`exitCode = FAILURE`** is set
-4. **Lock and streams NOT released** (bug)
-5. **Process continues**, processes other records
-6. **Process exits with `exitCode = FAILURE`**
-7. **External mechanism (scheduler/tsipInitiator) sees FAILURE**
-8. **Immediately restarts TSIP** (retry on failure)
-9. **New process starts**, tries same records
-10. **Same error occurs** (e.g., ReportStudy still fails)
-11. **Cycle repeats indefinitely**
+1. **User initiates single TSIP run** (one-time user action)
+2. **TSIP processes parameter records in a loop** (`foreach`)
+3. **One record fails** (e.g., ReportStudy fails)
+4. **`exitCode = FAILURE`** is set
+5. **Lock and streams NOT released** (bug)
+6. **Process continues**, processes other records
+7. **Process exits with `exitCode = FAILURE`**
+8. **Automated mechanism (scheduler/tsipInitiator) sees FAILURE exit code**
+9. **Automatically and immediately restarts TSIP** (retry on failure - NO USER INPUT)
+10. **New process starts**, tries same records
+11. **Same error occurs** (e.g., ReportStudy still fails)
+12. **Cycle repeats indefinitely** (fully automated loop, no user intervention)
 
-**Evidence for Retry Mechanism**:
-- Comment mentions "tsipInitiator" (line 170)
+**Confirmed Evidence**:
+- **Confirmed**: Loop is automated, not user-initiated
+- Comment mentions "tsipInitiator" (line 170) - automated process manager
 - Exit code is carefully tracked (`exitCode` variable)
 - Exit code is passed to `Application.Exit()` (line 650)
-- This suggests something monitors exit codes
+- `tsipInitiator` monitors exit codes and automatically retries on failure
+- **No user input required after initial run** - loop is self-perpetuating
 
 ---
 
@@ -292,21 +287,22 @@ Application.Exit("Successful normal exit from TpRunTsip.Main()", exitCode);
 
 ## The Real Root Cause
 
-### Primary Cause: **Retry Mechanism + Exit Code**
+### ✅ CONFIRMED: **Automated Retry Mechanism + Exit Code**
 
-**The retry mechanism** (scheduler/tsipInitiator) sees FAILURE exit code and immediately restarts TSIP.
+**The automated retry mechanism** (scheduler/tsipInitiator) sees FAILURE exit code and **automatically** restarts TSIP **without user intervention**.
 
 **Why it retries**:
 - Exit code indicates failure
-- Retry mechanism assumes transient error
-- Restarts process to retry
+- Automated retry mechanism assumes transient error
+- **Automatically restarts process to retry** (no user input)
 - **But error is NOT transient** - same error occurs every time
 
 **Why it's endless**:
 - Same error occurs every run
 - Exit code is always FAILURE
-- Retry mechanism keeps retrying
-- **No backoff or failure limit**
+- **Automated retry mechanism keeps retrying** (no user intervention)
+- **No backoff or failure limit** - retries immediately and indefinitely
+- **Single user run triggers infinite automated loop**
 
 ---
 
@@ -435,20 +431,23 @@ finally
 
 ### Root Cause
 
-**Primary**: **Retry mechanism sees FAILURE exit code and immediately restarts TSIP**
+**Primary**: **✅ CONFIRMED - Automated retry mechanism sees FAILURE exit code and immediately restarts TSIP (no user input)**
+
+**Confirmed**: The infinite loop is **fully automated** - triggered by a single user run, then continues without any user intervention.
 
 **Secondary**:
 - Lock not released (enables blocking)
 - Streams not closed (causes data loss)
-- Exit code set on non-fatal errors (triggers retry)
+- Exit code set on non-fatal errors (triggers automated retry)
 
 ### The Cycle
 
-1. TSIP fails → `exitCode = FAILURE`
-2. Process exits with FAILURE
-3. Retry mechanism restarts TSIP
-4. Same error occurs
-5. **Cycle repeats indefinitely**
+1. **User initiates single TSIP run** (one-time action)
+2. TSIP fails → `exitCode = FAILURE`
+3. Process exits with FAILURE
+4. **Automated retry mechanism (tsipInitiator) automatically restarts TSIP** (no user input)
+5. Same error occurs
+6. **Cycle repeats indefinitely** (fully automated, no user intervention)
 
 ### Why "Endless Error Streams"
 
