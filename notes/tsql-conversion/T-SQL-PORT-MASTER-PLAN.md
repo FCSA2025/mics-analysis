@@ -21,6 +21,30 @@
 
 ---
 
+## ⚠️ CRITICAL: Independent Implementation Decision
+
+**Decision**: ✅ **We will NOT modify FCSA_BACKEND_SQL. We will pursue our own independent implementation.**
+
+**Rationale**:
+- The `FCSA_BACKEND_SQL` repository has a high risk of failure
+- Independent implementation ensures we have full control
+- Avoids inheriting problems from existing incomplete port
+- Allows us to implement best practices from the start
+
+**FCSA_BACKEND_SQL Status**: **Reference Only**
+- The `FCSA_BACKEND_SQL` repository is analyzed for learning purposes only
+- We may reference it for understanding approaches, but will not modify it
+- Our implementation will be completely independent
+- See `../fcsa-backend-sql/` for analysis of the existing port
+
+**Implementation Approach**: **Start Fresh**
+- Build new T-SQL implementation from scratch
+- Use planning documents in this directory as the foundation
+- Implement solutions documented in `solutions/` directory
+- Follow best practices and documented decisions
+
+---
+
 ## Project Status Overview
 
 | Category | Status | Items | Notes |
@@ -268,15 +292,25 @@
 
 ## Implementation Roadmap
 
+**Note**: This is an **independent implementation** - we are NOT modifying `FCSA_BACKEND_SQL`. We are building our own T-SQL port from scratch based on the planning work in this directory.
+
 ### Phase 1: Core Implementation (Ready)
 
 **Status**: ✅ All solutions documented, ready to implement
 
+**Approach**: **Start Fresh**
+- Build new T-SQL stored procedures from scratch
+- Use C# source code as the reference
+- Implement solutions documented in `solutions/` directory
+- Follow all documented decisions and best practices
+
 **Tasks**:
-1. Implement nested loop structure (cursors + set-based)
-2. Create pre-computed lookup tables (antenna discrimination, over-horizon)
-3. Implement CTX lookup with pure T-SQL
-4. Implement error recovery (transactional with cleanup)
+1. Set up database schema (`tpruntsip` schema, base tables)
+2. Implement nested loop structure (cursors + set-based)
+3. Create pre-computed lookup tables (antenna discrimination, over-horizon)
+4. Implement CTX lookup with pure T-SQL
+5. Implement error recovery (transactional with cleanup)
+6. Implement core calculation procedures (geometry, path loss, interference margin)
 
 **Estimated Effort**: **8-12 weeks** (full implementation)
 
@@ -359,8 +393,11 @@ Located in [`historical/`](./historical/):
 ## Next Steps
 
 ### Immediate (High Priority)
-1. **Implementation Planning** - Create detailed implementation plan for Phase 1
-2. **Begin Core Implementation** - Start with nested loop structure and basic calculations
+1. **Database Schema Setup** - Create `tpruntsip` schema and base table structures
+2. **Implementation Planning** - Create detailed implementation plan for Phase 1
+3. **Begin Core Implementation** - Start with nested loop structure and basic calculations
+
+**Note**: This is an independent implementation - we are building from scratch, not modifying `FCSA_BACKEND_SQL`.
 
 ### Short Term
 3. **Create Lookup Tables** - Set up pre-computed tables

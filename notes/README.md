@@ -1,109 +1,124 @@
-# T-SQL Port Documentation
+# MICS# Analysis Documentation
 
-This directory contains all documentation for the TSIP to T-SQL port project.
+This directory contains documentation for three distinct projects:
 
----
-
-## 🎯 Start Here
-
-**For project status, decisions, and roadmap**:  
-→ **[T-SQL-PORT-MASTER-PLAN.md](./T-SQL-PORT-MASTER-PLAN.md)** ⭐
-
-This is the **single source of truth** for the project. It contains:
-- Project status overview
-- All implementation decisions
-- Fully addressed challenges
-- Remaining work
-- Implementation roadmap
+1. **Bug Fixes** - Analysis and fixes for existing C# production code issues
+2. **T-SQL Conversion Project** - Planning and analysis for porting TSIP to T-SQL
+3. **FCSA_BACKEND_SQL Repository Analysis** - Analysis of the existing T-SQL port implementation
 
 ---
 
-## 📚 Document Organization
+## 📁 Directory Structure
 
-### Primary Reference
-- **`T-SQL-PORT-MASTER-PLAN.md`** ⭐ - **START HERE** - Consolidated project plan and status
-
-### Solution Documents (Detailed Implementation)
-- `tsip-nested-loops-structure.md` - 6-level nested loop architecture and cursor strategy
-- `antenna-discrimination-analysis.md` - Pre-computed lookup table solution
-- `over-horizon-path-loss-analysis.md` - Pre-computed database solution
-- `ctx-lookup-pure-tsql.md` - Pure T-SQL CTX caching solution
-- `state-management-tsql-analysis.md` - State management analysis (not a blocker)
-- `error-recovery-implementation-decision.md` - Transactional error recovery with cleanup
-
-### Reference Documents (Supporting Information)
-- `tsip-process-flow.md` - High-level TSIP process flow
-- `database-tables.md` - Table schemas, naming conventions, cleanup functions
-- `performance-data-profiling.md` - Actual data volumes and performance metrics
-- `storage-requirements-analysis.md` - Storage estimates for lookup tables
-- `antenna-tables-maintenance.md` - Antenna table update workflow
-- `tsip-queue-management.md` - Queue and locking mechanisms
-- `tsip-lock-bug-analysis.md` - Production lock bug analysis
-
-### Supporting Analysis (Optional Reference)
-- `error-recovery-analysis.md` - Detailed error recovery options analysis
-- `ctx-lookup-caching-analysis.md` - CTX caching options analysis
-
-### Historical/Superseded (Kept for Reference)
-- `tsql-port-feasibility.md` ⚠️ - Superseded by master plan
-- `tsql-remaining-challenges.md` ⚠️ - Superseded by master plan
-- `tsql-challenging-portions.md` ⚠️ - Partially superseded (info moved to solution docs)
-
-### Consolidated/Removed
-- ~~`trouble-spots-summary.md`~~ - Consolidated into master plan
-- ~~`remaining-unaddressed-concerns.md`~~ - Consolidated into master plan
+```
+notes/
+├── README.md                    # This file - main index
+├── bug-fixes/                   # C# Production Code Bug Fixes
+│   ├── README.md                # Bug fixes overview
+│   └── BUG-FIXES-MASTER.md      # Consolidated bug analysis and fixes
+├── tsql-conversion/             # T-SQL Port Planning (from mics-analysis perspective)
+│   ├── README.md                # T-SQL conversion overview
+│   ├── T-SQL-PORT-MASTER-PLAN.md  # Master plan and status
+│   ├── solutions/               # Detailed implementation solutions
+│   ├── reference/               # Reference documents
+│   ├── fixes/                   # Fix guides (for planning)
+│   └── historical/              # Superseded documents
+├── fcsa-backend-sql/            # FCSA_BACKEND_SQL Repository Analysis
+│   ├── README.md                # Repository analysis overview
+│   ├── analysis/                # General analysis
+│   ├── fixes/                   # Bug fixes for T-SQL code
+│   ├── comparison/              # Comparison with C# source
+│   └── status/                  # Completion status
+└── shared/                      # Shared reference documents
+    ├── database-tables.md       # Table schemas and naming
+    └── tsip-process-flow.md     # High-level TSIP process flow
+```
 
 ---
 
-## 📋 Quick Reference
+## 🐛 Bug Fixes
 
-### Project Status
-- ✅ **5 challenges fully addressed** (Nested Loops, Antenna Discrimination, Over-Horizon Path Loss, CTX Caching, State Management)
-- ⚠️ **1 challenge partially addressed** (Performance Implications - needs indexing/batching)
-- ❌ **1 item out of scope** (Report Generation - keep in C#)
+**IMPORTANT**: These are bug fixes for the **existing C# production code** (TpRunTsip, TsipInitiator, etc.), **NOT** bugs in T-SQL development or the T-SQL port project.
 
-### Key Decisions
-- **Nested Loops**: Cursors (levels 1-4) + Set-based (levels 5-6)
-- **Antenna Discrimination**: Pre-computed lookup table
-- **Over-Horizon Path Loss**: Pre-computed database (on-demand)
-- **CTX Caching**: Pure T-SQL set-based
-- **State Management**: Not needed (T-SQL handles naturally)
-- **Error Recovery**: Transactional with explicit cleanup
+**Location**: [`bug-fixes/`](./bug-fixes/)
 
-### Remaining Work
-- **Performance Optimization**: 4-8 days (indexing, batching, parallel execution)
+**Primary Document**: [`BUG-FIXES-MASTER.md`](./bug-fixes/BUG-FIXES-MASTER.md)
+
+**Summary**: Analysis of 5 critical bugs in the C# production code that cause:
+- Infinite retry loops (TSIP runs multiple times)
+- Endless error streams
+- Results never written to output files
+- Lock starvation and resource leaks
+
+**See**: [`bug-fixes/README.md`](./bug-fixes/README.md) for detailed overview
 
 ---
 
-## 🔍 Finding Information
+## 🔄 T-SQL Conversion Project
 
-### Need to know project status?
-→ `T-SQL-PORT-MASTER-PLAN.md`
+**Location**: [`tsql-conversion/`](./tsql-conversion/)
 
-### Need implementation details for a specific challenge?
-→ See solution documents listed in master plan
+**Primary Document**: [`T-SQL-PORT-MASTER-PLAN.md`](./tsql-conversion/T-SQL-PORT-MASTER-PLAN.md)
 
-### Need reference information (tables, data volumes, etc.)?
-→ See reference documents listed above
+**Summary**: Planning and analysis for porting TSIP interference calculation code from C# to T-SQL stored procedures.
 
-### Need historical context?
-→ See historical/superseded documents (marked with ⚠️)
+**Status**: Analysis Phase Complete, Ready for Implementation
 
----
+**See**: [`tsql-conversion/README.md`](./tsql-conversion/README.md) for detailed overview
 
-## 📝 Document Maintenance
-
-**Primary Document**: `T-SQL-PORT-MASTER-PLAN.md`  
-**Update Frequency**: As decisions are made and status changes  
-**Other Documents**: Update as needed for implementation details
+**Note**: This is **planning work** from the mics-analysis perspective. For analysis of the **actual T-SQL port implementation**, see [`fcsa-backend-sql/`](./fcsa-backend-sql/) below.
 
 ---
 
-## 🗂️ Document Consolidation
+## 🗄️ FCSA_BACKEND_SQL Repository Analysis
 
-See `DOCUMENT-CONSOLIDATION-PLAN.md` for details on document organization and consolidation strategy.
+**Location**: [`fcsa-backend-sql/`](./fcsa-backend-sql/)
+
+**Primary Document**: [`README.md`](./fcsa-backend-sql/README.md)
+
+**Summary**: Analysis and documentation of the existing T-SQL port in the `FCSA2025/FCSA_BACKEND_SQL` GitHub repository. This is a **separate project** from the planning work in `tsql-conversion/`.
+
+**Status**: ~75-80% Complete (structurally complete, needs bug fixes)
+
+**⚠️ IMPORTANT**: **Reference Only - NOT for Modification**
+- We will NOT modify `FCSA_BACKEND_SQL`
+- Our T-SQL conversion will be a completely independent implementation
+- This analysis is for learning and understanding approaches only
+- See `tsql-conversion/T-SQL-PORT-MASTER-PLAN.md` for our independent implementation plan
+
+**Key Documents**:
+- [`analysis/repository-overview.md`](./fcsa-backend-sql/analysis/repository-overview.md) - Comprehensive repository overview
+- [`status/completion-assessment.md`](./fcsa-backend-sql/status/completion-assessment.md) - Detailed completion analysis
+- [`fixes/missing-variable-declarations.md`](./fcsa-backend-sql/fixes/missing-variable-declarations.md) - Critical compilation fixes
+
+**See**: [`fcsa-backend-sql/README.md`](./fcsa-backend-sql/README.md) for detailed overview
+
+---
+
+## 📚 Shared Reference Documents
+
+**Location**: [`shared/`](./shared/)
+
+Documents used by both projects:
+- [`database-tables.md`](./shared/database-tables.md) - Table schemas, naming conventions, cleanup functions
+- [`tsip-process-flow.md`](./shared/tsip-process-flow.md) - High-level TSIP process flow
+
+---
+
+## 🎯 Quick Navigation
+
+### Need to fix production bugs?
+→ [`bug-fixes/BUG-FIXES-MASTER.md`](./bug-fixes/BUG-FIXES-MASTER.md)
+
+### Need T-SQL port planning status?
+→ [`tsql-conversion/T-SQL-PORT-MASTER-PLAN.md`](./tsql-conversion/T-SQL-PORT-MASTER-PLAN.md)
+
+### Need FCSA_BACKEND_SQL repository analysis?
+→ [`fcsa-backend-sql/README.md`](./fcsa-backend-sql/README.md)
+
+### Need reference information?
+→ [`shared/`](./shared/) directory
 
 ---
 
 *Last Updated: January 2026*
-
