@@ -263,7 +263,7 @@ SELECT
     a.acode,
     n.angle AS angle_deg,
     -- Interpolate discrimination values at each 0.1° angle
-    -- (Complex interpolation logic - see antenna-discrimination-analysis.md)
+    -- (Complex interpolation logic - see antenna-discrimination-analysis.md in same directory)
     ...
 FROM (SELECT DISTINCT acode FROM main.sd_ante 
       WHERE acode NOT IN (SELECT DISTINCT acode FROM tsip.ant_disc_lookup)) a
@@ -377,7 +377,7 @@ BEGIN
       AND a.anip > 0;  -- Only antennas with pattern data
     
     -- Generate lookup values for each new antenna
-    -- (See antenna-discrimination-analysis.md for complete implementation)
+    -- (See antenna-discrimination-analysis.md in same directory for complete implementation)
     
     -- For each new antenna, insert ~1,800 rows (0.1° resolution)
     INSERT INTO tsip.ant_disc_lookup (acode, angle_deg, disc_v_copol, disc_v_xpol, disc_h_copol, disc_h_xpol)
@@ -385,7 +385,7 @@ BEGIN
         na.acode,
         angles.angle AS angle_deg,
         -- Interpolate from sd_antd pattern points
-        -- (Complex interpolation - see antenna-discrimination-analysis.md)
+        -- (Complex interpolation - see antenna-discrimination-analysis.md in same directory)
         ...
     FROM @NewAntennas na
     CROSS JOIN (

@@ -31,6 +31,7 @@ notes/
 │   └── status/                  # Completion status
 └── shared/                      # Shared reference documents
     ├── database-tables.md       # Table schemas and naming
+    ├── sql-server-cursorai-access.md  # SQL Server CursorAiAccess login (local/dev)
     └── tsip-process-flow.md     # High-level TSIP process flow
 ```
 
@@ -101,6 +102,7 @@ notes/
 
 Documents used by both projects:
 - [`database-tables.md`](./shared/database-tables.md) - Table schemas, naming conventions, cleanup functions
+- [`sql-server-cursorai-access.md`](./shared/sql-server-cursorai-access.md) - SQL Server CursorAiAccess login (server, password, databases)
 - [`tsip-process-flow.md`](./shared/tsip-process-flow.md) - High-level TSIP process flow
 
 ---
@@ -118,6 +120,9 @@ Documents used by both projects:
 
 ### Need reference information?
 → [`shared/`](./shared/) directory
+
+### Need SQL Server CursorAiAccess login?
+→ [`shared/sql-server-cursorai-access.md`](./shared/sql-server-cursorai-access.md)
 
 ---
 

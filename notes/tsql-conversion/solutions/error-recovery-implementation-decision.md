@@ -221,9 +221,9 @@ END;
 
 ## Related Documents
 
-- `error-recovery-analysis.md` - Complete analysis of error recovery options
+- `../historical/error-recovery-analysis.md` - Complete analysis of error recovery options
 - `state-management-tsql-analysis.md` - State management analysis (progress tracking not needed)
-- `database-tables.md` - Table naming conventions and cleanup functions
+- `../../shared/database-tables.md` - Table naming conventions and cleanup functions
 
 ---
 

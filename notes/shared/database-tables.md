@@ -522,8 +522,8 @@ fcsa.tt_testproj_run01_parm
 fcsa.tt_testproj_run01_site
 fcsa.tt_testproj_run01_ante
 fcsa.tt_testproj_run01_chan
-fcsa.tt_testproj_run01_temp1
-fcsa.tt_testproj_run01_temp2
+fcsa.tt_testproj_run01_tmp1   -- C# uses suffix _tmp1 (see Cvt.cs)
+fcsa.tt_testproj_run01_tmp2   -- C# uses suffix _tmp2 (see Cvt.cs)
 ```
 
 **Source data tables (read from):**
@@ -611,6 +611,93 @@ public static int DropTable(string tableName)
 - Checks if table exists before attempting drop (avoids errors)
 - Uses ODBC direct execution
 - Returns success even if table doesn't exist
+
+---
+
+### C# Drop Commands for Each TT Table
+
+Table names are built with `GenUtil.UtCvtName(Constant.TT_xxx, tableName, out intName)` using the mappings in `_DataStructures\Cvt.cs`. The actual SQL executed for each is **`drop table {tableName}`** via `DropTable(intName)`.
+
+#### Name mapping (Cvt.cs)
+
+| Constant   | Prefix | Suffix  | Resulting name              |
+|------------|--------|---------|-----------------------------|
+| TT_PARM    | `tt_`  | `_parm` | `tt_{tableName}_parm`       |
+| TT_SITE    | `tt_`  | `_site` | `tt_{tableName}_site`       |
+| TT_ANTE    | `tt_`  | `_ante` | `tt_{tableName}_ante`       |
+| TT_CHAN    | `tt_`  | `_chan` | `tt_{tableName}_chan`       |
+| TT_TEMP1   | `tt_`  | `_tmp1` | `tt_{tableName}_tmp1`       |
+| TT_TEMP2   | `tt_`  | `_tmp2` | `tt_{tableName}_tmp2`       |
+
+**Note:** Temp tables use suffix **`_tmp1`** / **`_tmp2`** in code, not `_temp1` / `_temp2`.
+
+#### UtDropTable(Constant.TT, tableName) — drops the four main TT tables
+
+**Location:** `_Utillib\Ssutil.cs` (lines 2985-3005)
+
+```csharp
+case Constant.TT:
+    GenUtil.UtCvtName(Constant.TT_PARM, tableName, out intName);
+    rc = DropTable(intName);           // drop table tt_{tableName}_parm
+    if (rc != Constant.SUCCESS) return (rc);
+
+    GenUtil.UtCvtName(Constant.TT_SITE, tableName, out intName);
+    rc = DropTable(intName);           // drop table tt_{tableName}_site
+    if (rc != Constant.SUCCESS) return (rc);
+
+    GenUtil.UtCvtName(Constant.TT_ANTE, tableName, out intName);
+    rc = DropTable(intName);           // drop table tt_{tableName}_ante
+    if (rc != Constant.SUCCESS) return (rc);
+
+    GenUtil.UtCvtName(Constant.TT_CHAN, tableName, out intName);
+    rc = DropTable(intName);           // drop table tt_{tableName}_chan
+
+    rc = UserInfo.UtUpdateCentralTable("D", tableName, tableType, "D", "Y");
+    break;
+```
+
+**TT_TEMP1 and TT_TEMP2 are not dropped here**; they are dropped separately (see below).
+
+#### UtCleanupTables(Constant.TT, tableName) — same four tables (cleanup path)
+
+**Location:** `_Utillib\Ssutil.cs` (lines 3272-3280)
+
+```csharp
+case Constant.TT:
+    GenUtil.UtCvtName(Constant.TT_PARM, tableName, out intName);
+    DropTable(intName);
+    GenUtil.UtCvtName(Constant.TT_SITE, tableName, out intName);
+    DropTable(intName);
+    GenUtil.UtCvtName(Constant.TT_ANTE, tableName, out intName);
+    DropTable(intName);
+    GenUtil.UtCvtName(Constant.TT_CHAN, tableName, out intName);
+    DropTable(intName);
+    break;
+```
+
+#### TT_TEMP1 and TT_TEMP2 — dropped separately
+
+Dropped via `UtDropTable(Constant.TT_TEMP1, paramName)` and `UtDropTable(Constant.TT_TEMP2, paramName)`.
+
+**Example (TSIP run cleanup):** `TpRunTsip\TeBuildSH.cs` (lines 218-219)
+
+```csharp
+Ssutil.UtDropTable(Constant.TT_TEMP1, paramName);   // drop table tt_{paramName}_tmp1
+Ssutil.UtDropTable(Constant.TT_TEMP2, paramName);  // drop table tt_{paramName}_tmp2
+```
+
+#### Summary: command that drops each TT table
+
+| TT table  | Constant  | C# drop call | Resulting SQL (conceptually)          |
+|-----------|-----------|--------------|----------------------------------------|
+| TT_PARM   | TT_PARM   | `DropTable(intName)` after `UtCvtName(TT_PARM, ...)`  | `drop table tt_{tableName}_parm`  |
+| TT_SITE   | TT_SITE   | `DropTable(intName)` after `UtCvtName(TT_SITE, ...)`  | `drop table tt_{tableName}_site`  |
+| TT_ANTE   | TT_ANTE   | `DropTable(intName)` after `UtCvtName(TT_ANTE, ...)`  | `drop table tt_{tableName}_ante`  |
+| TT_CHAN   | TT_CHAN   | `DropTable(intName)` after `UtCvtName(TT_CHAN, ...)`  | `drop table tt_{tableName}_chan`  |
+| TT_TEMP1  | TT_TEMP1  | `UtDropTable(Constant.TT_TEMP1, paramName)`          | `drop table tt_{paramName}_tmp1`  |
+| TT_TEMP2  | TT_TEMP2  | `UtDropTable(Constant.TT_TEMP2, paramName)`          | `drop table tt_{paramName}_tmp2`  |
+
+**Source files:** `MICS#\_Utillib\Ssutil.cs`, `MICS#\_DataStructures\Cvt.cs`, `MICS#\TpRunTsip\TeBuildSH.cs` (paths relative to CloudMICS# 20230116).
 
 ---
 

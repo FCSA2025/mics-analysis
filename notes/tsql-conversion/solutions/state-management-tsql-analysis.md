@@ -220,7 +220,7 @@ Most "state" in C# is actually:
 - No partial results on failure
 - Still restart from beginning (matches C# behavior)
 
-**See**: `error-recovery-analysis.md` for complete analysis of error recovery options
+**See**: `../historical/error-recovery-analysis.md` for complete analysis of error recovery options
 
 **Status**: ⚠️ **OPTIONAL** - Can use transactions for better error handling than C#, but resume capability is not needed
 
@@ -369,7 +369,7 @@ SELECT @numCases AS total_cases;
 
 **Progress Tracking**: ✅ **NOT NEEDED** - Current C# code doesn't have it, and it's not required for T-SQL port.
 
-**Error Recovery**: ⚠️ **OPTIONAL** - Can use transactions (better than C#), but resume capability not needed. See `error-recovery-analysis.md` for details.
+**Error Recovery**: ⚠️ **OPTIONAL** - Can use transactions (better than C#), but resume capability not needed. See `../historical/error-recovery-analysis.md` for details.
 
 **Total Effort**: **0-2 days** (only if transaction-based error recovery desired)
 
