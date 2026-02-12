@@ -20,6 +20,12 @@ IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = N'trg_ArchiveTT_OnDropTable' 
     DROP TRIGGER trg_ArchiveTT_OnDropTable ON DATABASE;
 GO
 
+-- Required SET options for trigger compatibility across SQL Server instances
+-- These settings are captured at trigger creation time
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON;
+GO
+
 CREATE TRIGGER trg_ArchiveTT_OnDropTable
 ON DATABASE
 FOR DROP_TABLE
@@ -46,18 +52,19 @@ BEGIN
     -- Rollback the drop so the table and data exist again
     ROLLBACK;
 
-    -- Parse RunKey: e.g. tt_test_run01_parm -> test_run01 (strip tt_ and suffix _parm/_site/_ante/_chan)
+    -- Parse RunKey: e.g. tt_test_run01_parm -> test_run01 (strip tt_ prefix and _parm/_site/_ante/_chan suffix)
+    -- SUBSTRING position 4 skips 3 chars ('tt_'), so subtract 3 for prefix, 5 for suffix
     DECLARE @RunKey NVARCHAR(128);
     IF @ObjectName LIKE 'tt_%_parm'
-        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 4 - 5);  -- 5 = len('_parm')
+        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 3 - 5);  -- 3 = len('tt_'), 5 = len('_parm')
     ELSE IF @ObjectName LIKE 'tt_%_site'
-        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 4 - 5);   -- 5 = len('_site')
+        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 3 - 5);  -- 3 = len('tt_'), 5 = len('_site')
     ELSE IF @ObjectName LIKE 'tt_%_ante'
-        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 4 - 5);   -- 5 = len('_ante')
+        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 3 - 5);  -- 3 = len('tt_'), 5 = len('_ante')
     ELSE IF @ObjectName LIKE 'tt_%_chan'
-        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 4 - 5);   -- 5 = len('_chan')
+        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 3 - 5);  -- 3 = len('tt_'), 5 = len('_chan')
     ELSE
-        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 4);
+        SET @RunKey = SUBSTRING(@ObjectName, 4, LEN(@ObjectName) - 3);
 
     SET @QualifiedName = QUOTENAME(@SchemaName) + N'.' + QUOTENAME(@ObjectName);
 
