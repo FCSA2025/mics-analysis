@@ -146,12 +146,9 @@ CREATE TABLE tsip_archive.ArchiveFT_SITE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,       -- Links to ArchiveTT_PARM.RunKey
     PdfName      NVARCHAR(128) NOT NULL,       -- TS PDF name (= proname)
-    call1        CHAR(9) NULL,
-    call2        CHAR(9) NULL,
-    name1        CHAR(32) NULL,
-    name2        CHAR(32) NULL,
-    oper         CHAR(6) NULL,
-    oper2        CHAR(6) NULL,
+    call1        CHAR(9) NULL,                 -- Site's call sign (primary key in source)
+    name1        CHAR(32) NULL,                -- Site's name
+    oper         CHAR(6) NULL,                 -- Site's operator
     latit        INT NULL,
     longit       INT NULL,
     grnd         FLOAT NULL,

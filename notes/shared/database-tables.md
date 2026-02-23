@@ -432,6 +432,59 @@ These tables contain the **master data** that TpRunTsip reads from.
 | FT_CHAN | `_chan` | Channel information (frequency, power, equipment) |
 | FT_CHNG_CALL | `_chng_call` | Call sign change history |
 
+#### FT Table Relationships and Data Model
+
+**Key Concept: Sites vs Links**
+
+- **FT_SITE** contains only physical site information (one record per site)
+- **FT_ANTE** and **FT_CHAN** establish the point-to-point links via `call1` + `call2`
+- A single site can have multiple links to different remote sites
+
+```
+                    FT_SITE (Physical Sites Only)
+                    ┌─────────────────────────────┐
+                    │ call1 = Site's call sign    │
+                    │ name1 = Site's name         │
+                    │ latit/longit = Location     │
+                    │ grnd = Ground elevation     │
+                    │ oper = Operator             │
+                    └──────────────┬──────────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              │                    │                    │
+              ▼                    ▼                    ▼
+         FT_ANTE              FT_ANTE              FT_CHAN
+    ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+    │ call1='KDEN' │     │ call1='KDEN' │     │ call1='KDEN' │
+    │ call2='KBOU' │     │ call2='KCOS' │     │ call2='KBOU' │
+    │ (to Boulder) │     │ (to Co Spgs) │     │ freqtx/rx    │
+    └──────────────┘     └──────────────┘     └──────────────┘
+```
+
+**Relationship Keys:**
+
+| Join | Fields | Meaning |
+|------|--------|---------|
+| SITE → ANTE | `call1` only | All antennas at this site |
+| SITE → CHAN | `call1` only | All channels from this site |
+| ANTE → CHAN | `call1` + `call2` + `bndcde` | Channels on specific antenna to specific remote |
+
+**Example: One Site with Multiple Links**
+
+```
+Denver (KDEN) site record in FT_SITE:
+  └── Has antennas in FT_ANTE pointing to:
+        ├── Boulder (call2='KBOU')
+        ├── Colorado Springs (call2='KCOS')
+        └── Fort Collins (call2='KFNL')
+```
+
+**TX/RX Frequency Pairing:**
+
+For a complete link, each end has its own channel record with swapped frequencies:
+- Site A's TX frequency = Site B's RX frequency
+- Site A's RX frequency = Site B's TX frequency
+
 ### Earth Station (ES) Tables — Prefix: `fe_`
 
 | Table | Suffix | Purpose |

@@ -158,14 +158,12 @@ VALUES
     ('CALL002  ', 'REM002   ', '11G ', 'SH-2025-02', 'P', 'A');
 GO
 
--- FT_SITE - Site information
+-- FT_SITE - Site catalog (single physical location per row)
+-- Note: call2 is NOT in FT_SITE - it's in FT_ANTE and FT_CHAN which define links
 CREATE TABLE dbo.ft_testproj_site (
-    call1        CHAR(9) NULL,
-    call2        CHAR(9) NULL,
-    name1        CHAR(32) NULL,
-    name2        CHAR(32) NULL,
-    oper         CHAR(6) NULL,
-    oper2        CHAR(6) NULL,
+    call1        CHAR(9) NULL,     -- Site's call sign
+    name1        CHAR(32) NULL,    -- Site's name
+    oper         CHAR(6) NULL,     -- Site's operator
     latit        INT NULL,
     longit       INT NULL,
     grnd         FLOAT NULL,
@@ -173,10 +171,12 @@ CREATE TABLE dbo.ft_testproj_site (
 );
 GO
 
-INSERT INTO dbo.ft_testproj_site (call1, call2, name1, name2, oper, latit, longit, grnd, cmd)
+INSERT INTO dbo.ft_testproj_site (call1, name1, oper, latit, longit, grnd, cmd)
 VALUES 
-    ('CALL001  ', 'REM001   ', 'Denver Main             ', 'Denver Remote           ', 'OP01  ', 394000000, -1049000000, 1609.0, 'A'),
-    ('CALL002  ', 'REM002   ', 'Boulder Site            ', 'Boulder Remote          ', 'OP02  ', 400150000, -1052200000, 1655.0, 'A');
+    ('CALL001  ', 'Denver Main             ', 'OP01  ', 394000000, -1049000000, 1609.0, 'A'),
+    ('CALL002  ', 'Boulder Site            ', 'OP02  ', 400150000, -1052200000, 1655.0, 'A'),
+    ('REM001   ', 'Denver Remote           ', 'OP01  ', 394500000, -1048500000, 1620.0, 'A'),
+    ('REM002   ', 'Boulder Remote          ', 'OP02  ', 400250000, -1051800000, 1670.0, 'A');
 GO
 
 CREATE TABLE dbo.ft_testproj_ante (

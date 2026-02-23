@@ -153,12 +153,13 @@ BEGIN
             END
 
             -- Archive FT_SITE if it exists
+            -- Note: FT_SITE only has call1 (not call2) - it's a site catalog, not a link table
             IF OBJECT_ID(@FtSiteTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_SITE 
-                        (RunKey, PdfName, call1, call2, name1, name2, oper, oper2, latit, longit, grnd, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, call1, call2, name1, name2, oper, oper2, latit, longit, grnd, cmd, GETUTCDATE()
+                        (RunKey, PdfName, call1, name1, oper, latit, longit, grnd, cmd, ArchivedAt)
+                    SELECT @RunKey, @PdfName, call1, name1, oper, latit, longit, grnd, cmd, GETUTCDATE()
                     FROM ' + @FtSiteTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
