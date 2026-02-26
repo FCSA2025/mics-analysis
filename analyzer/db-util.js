@@ -144,7 +144,7 @@ async function cmdTables(schemaFilter = null) {
             SELECT TOP 100
                 SCHEMA_NAME(t.schema_id) AS SchemaName,
                 t.name AS TableName,
-                SUM(p.rows) AS RowCount
+                SUM(p.rows) AS [RowCount]
             FROM sys.tables t
             LEFT JOIN sys.partitions p ON t.object_id = p.object_id AND p.index_id IN (0, 1)
             WHERE SCHEMA_NAME(t.schema_id) = ${schemaFilter}
@@ -156,7 +156,7 @@ async function cmdTables(schemaFilter = null) {
             SELECT TOP 100
                 SCHEMA_NAME(t.schema_id) AS SchemaName,
                 t.name AS TableName,
-                SUM(p.rows) AS RowCount
+                SUM(p.rows) AS [RowCount]
             FROM sys.tables t
             LEFT JOIN sys.partitions p ON t.object_id = p.object_id AND p.index_id IN (0, 1)
             GROUP BY t.schema_id, t.name
