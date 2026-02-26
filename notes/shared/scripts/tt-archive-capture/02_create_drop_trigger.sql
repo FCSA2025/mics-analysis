@@ -177,22 +177,21 @@ BEGIN
             END
 
             -- Archive FT_ANTE if it exists
-            -- Actual columns (37): cmd, recstat, call1(PK), call2(PK), bndcde(PK), anum(PK), ause, acode,
-            --                      aht, azmth, elvtn, dist, offazm, tazmth, telvtn, tgain, rgain, apat1/2,
-            --                      adl, saze, agtpat, elo, azi, pol, patnum, adbadj, alossn, agama, atheta,
-            --                      aphia, uant, antmod, mdate, mtime, licence
+            -- Verified from micsprod (37 columns)
             IF OBJECT_ID(@FtAnteTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_ANTE 
                         (RunKey, PdfName, cmd, recstat, call1, call2, bndcde, anum, ause, acode,
-                         aht, azmth, elvtn, dist, offazm, tazmth, telvtn, tgain, rgain, apat1, apat2,
-                         adl, saze, agtpat, elo, azi, pol, patnum, adbadj, alossn, agama, atheta,
-                         aphia, uant, antmod, mdate, mtime, licence, ArchivedAt)
+                         aht, azmth, elvtn, dist, offazm, tazmth, telvtn, tgain,
+                         txfdlnth, txfdlnlh, txfdlntv, txfdlnlv, rxfdlnth, rxfdlnlh, rxfdlntv, rxfdlnlv,
+                         txpadpam, rxpadlna, txcompl, rxcompl, obsloss, kvalue, atwrno, nota, apoint,
+                         sdate, mdate, mtime, licence, ArchivedAt)
                     SELECT @RunKey, @PdfName, cmd, recstat, call1, call2, bndcde, anum, ause, acode,
-                           aht, azmth, elvtn, dist, offazm, tazmth, telvtn, tgain, rgain, apat1, apat2,
-                           adl, saze, agtpat, elo, azi, pol, patnum, adbadj, alossn, agama, atheta,
-                           aphia, uant, antmod, mdate, mtime, licence, GETUTCDATE()
+                           aht, azmth, elvtn, dist, offazm, tazmth, telvtn, tgain,
+                           txfdlnth, txfdlnlh, txfdlntv, txfdlnlv, rxfdlnth, rxfdlnlh, rxfdlntv, rxfdlnlv,
+                           txpadpam, rxpadlna, txcompl, rxcompl, obsloss, kvalue, atwrno, nota, apoint,
+                           sdate, mdate, mtime, licence, GETUTCDATE()
                     FROM ' + @FtAnteTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
@@ -200,26 +199,25 @@ BEGIN
             END
 
             -- Archive FT_CHAN if it exists
-            -- Actual columns (52): cmd, recstat, call1(PK), call2(PK), bndcde(PK), splan, hl, vh, chid(PK),
-            --                      freqtx, poltx, freqrx, polrx, stattx, statrx, statdt, servtx, servrx,
-            --                      eqpttx, eqptrx, pwrtx1/2/3, pwrrx1/2/3, bwdttx/rx, emscod1-6tx/rx,
-            --                      eqptcod, ctyuse, tstnid, mdate, mtime
+            -- Verified from micsprod (52 columns)
             IF OBJECT_ID(@FtChanTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_CHAN 
                         (RunKey, PdfName, cmd, recstat, call1, call2, bndcde, splan, hl, vh, chid,
-                         freqtx, poltx, freqrx, polrx, stattx, statrx, statdt, servtx, servrx,
-                         eqpttx, eqptrx, pwrtx1, pwrtx2, pwrtx3, pwrrx1, pwrrx2, pwrrx3,
-                         bwdttx, bwdtrx, emscod1tx, emscod2tx, emscod3tx, emscod4tx, emscod5tx, emscod6tx,
-                         emscod1rx, emscod2rx, emscod3rx, emscod4rx, emscod5rx, emscod6rx,
-                         eqptcod, ctyuse, tstnid, mdate, mtime, ArchivedAt)
+                         freqtx, poltx, antnumbtx1, antnumbtx2, eqpttx, eqptutx, pwrtx, atpccde,
+                         afsltx1, afsltx2, traftx, srvctx, stattx,
+                         freqrx, polrx, antnumbrx1, antnumbrx2, antnumbrx3, eqptrx, eqpturx,
+                         afslrx1, afslrx2, afslrx3, pwrrx1, pwrrx2, pwrrx3, trafrx, esint, tsint,
+                         srvcrx, statrx, routnumb, stnnumb, hopnumb, sdate,
+                         notetx, noterx, notegnl, cpoint, feetx, feerx, mdate, mtime, ArchivedAt)
                     SELECT @RunKey, @PdfName, cmd, recstat, call1, call2, bndcde, splan, hl, vh, chid,
-                           freqtx, poltx, freqrx, polrx, stattx, statrx, statdt, servtx, servrx,
-                           eqpttx, eqptrx, pwrtx1, pwrtx2, pwrtx3, pwrrx1, pwrrx2, pwrrx3,
-                           bwdttx, bwdtrx, emscod1tx, emscod2tx, emscod3tx, emscod4tx, emscod5tx, emscod6tx,
-                           emscod1rx, emscod2rx, emscod3rx, emscod4rx, emscod5rx, emscod6rx,
-                           eqptcod, ctyuse, tstnid, mdate, mtime, GETUTCDATE()
+                           freqtx, poltx, antnumbtx1, antnumbtx2, eqpttx, eqptutx, pwrtx, atpccde,
+                           afsltx1, afsltx2, traftx, srvctx, stattx,
+                           freqrx, polrx, antnumbrx1, antnumbrx2, antnumbrx3, eqptrx, eqpturx,
+                           afslrx1, afslrx2, afslrx3, pwrrx1, pwrrx2, pwrrx3, trafrx, esint, tsint,
+                           srvcrx, statrx, routnumb, stnnumb, hopnumb, sdate,
+                           notetx, noterx, notegnl, cpoint, feetx, feerx, mdate, mtime, GETUTCDATE()
                     FROM ' + @FtChanTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
