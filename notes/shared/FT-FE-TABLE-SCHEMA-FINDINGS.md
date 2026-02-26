@@ -160,11 +160,17 @@ srvctx, srvcrx, mdate, mtime
 1. ✅ **FT archive tables rewritten** based on actual schemas (verified)
 2. ✅ **All FT columns captured** for complete data preservation
 3. ✅ **Created validation tool** (`test-ft-archive-columns.js`) to verify definitions
+4. ✅ **Deployed to micsprod** (Feb 2026):
+   - Schema `tsip_archive` created with 18 archive tables
+   - DDL trigger `trg_ArchiveTT_OnDropTable` installed and enabled
+   - Test tables created with corrected FT structures
+5. ✅ **Created SQL execution tool** (`execute-sql-script.js`) for deployment
 
 ### Remaining
 1. ⬜ **FE archive tables need same treatment** - verify against actual FE tables
 2. ⬜ **Create FE validation test** similar to FT test
 3. ⬜ **Update trigger INSERT statements** for FE tables after verification
+4. ⬜ **Test the trigger** by dropping `tt_test_run01_parm` and verifying archive data
 
 ---
 
