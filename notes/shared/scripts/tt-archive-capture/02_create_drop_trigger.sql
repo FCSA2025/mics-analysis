@@ -127,12 +127,13 @@ BEGIN
             SET @FtChngCallTable = QUOTENAME(@SchemaName) + N'.ft_' + @proname + N'_chng_call';
 
             -- Archive FT_TITL if it exists
+            -- Actual columns: validated, namef, source, descr, mdate, mtime
             IF OBJECT_ID(@FtTitlTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_TITL 
-                        (RunKey, PdfName, title, cdate, mdate, mtime, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, title, cdate, mdate, mtime, cmd, GETUTCDATE()
+                        (RunKey, PdfName, validated, namef, source, descr, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, validated, namef, source, descr, mdate, mtime, GETUTCDATE()
                     FROM ' + @FtTitlTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
@@ -140,12 +141,13 @@ BEGIN
             END
 
             -- Archive FT_SHRL if it exists
+            -- Actual columns: userid, mdate, mtime
             IF OBJECT_ID(@FtShrlTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_SHRL 
-                        (RunKey, PdfName, call1, call2, bndcde, shession, approval, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, call1, call2, bndcde, shession, approval, cmd, GETUTCDATE()
+                        (RunKey, PdfName, userid, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, userid, mdate, mtime, GETUTCDATE()
                     FROM ' + @FtShrlTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
@@ -153,13 +155,21 @@ BEGIN
             END
 
             -- Archive FT_SITE if it exists
-            -- Note: FT_SITE only has call1 (not call2) - it's a site catalog, not a link table
+            -- Actual columns (29): cmd, recstat, call1(PK), name, prov, oper, latit, longit, grnd,
+            --                      stats, sdate, loc, icaccount, reg, spoint, nots, oprtyp, snumb,
+            --                      notwr, bandwd1-8, mdate, mtime
             IF OBJECT_ID(@FtSiteTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_SITE 
-                        (RunKey, PdfName, call1, name1, oper, latit, longit, grnd, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, call1, name1, oper, latit, longit, grnd, cmd, GETUTCDATE()
+                        (RunKey, PdfName, cmd, recstat, call1, name, prov, oper, latit, longit, grnd,
+                         stats, sdate, loc, icaccount, reg, spoint, nots, oprtyp, snumb, notwr,
+                         bandwd1, bandwd2, bandwd3, bandwd4, bandwd5, bandwd6, bandwd7, bandwd8,
+                         mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, cmd, recstat, call1, name, prov, oper, latit, longit, grnd,
+                           stats, sdate, loc, icaccount, reg, spoint, nots, oprtyp, snumb, notwr,
+                           bandwd1, bandwd2, bandwd3, bandwd4, bandwd5, bandwd6, bandwd7, bandwd8,
+                           mdate, mtime, GETUTCDATE()
                     FROM ' + @FtSiteTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
@@ -167,12 +177,22 @@ BEGIN
             END
 
             -- Archive FT_ANTE if it exists
+            -- Actual columns (37): cmd, recstat, call1(PK), call2(PK), bndcde(PK), anum(PK), ause, acode,
+            --                      aht, azmth, elvtn, dist, offazm, tazmth, telvtn, tgain, rgain, apat1/2,
+            --                      adl, saze, agtpat, elo, azi, pol, patnum, adbadj, alossn, agama, atheta,
+            --                      aphia, uant, antmod, mdate, mtime, licence
             IF OBJECT_ID(@FtAnteTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_ANTE 
-                        (RunKey, PdfName, call1, call2, bndcde, anum, acode, aht, azmth, elvtn, gain, dist, offazm, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, call1, call2, bndcde, anum, acode, aht, azmth, elvtn, gain, dist, offazm, cmd, GETUTCDATE()
+                        (RunKey, PdfName, cmd, recstat, call1, call2, bndcde, anum, ause, acode,
+                         aht, azmth, elvtn, dist, offazm, tazmth, telvtn, tgain, rgain, apat1, apat2,
+                         adl, saze, agtpat, elo, azi, pol, patnum, adbadj, alossn, agama, atheta,
+                         aphia, uant, antmod, mdate, mtime, licence, ArchivedAt)
+                    SELECT @RunKey, @PdfName, cmd, recstat, call1, call2, bndcde, anum, ause, acode,
+                           aht, azmth, elvtn, dist, offazm, tazmth, telvtn, tgain, rgain, apat1, apat2,
+                           adl, saze, agtpat, elo, azi, pol, patnum, adbadj, alossn, agama, atheta,
+                           aphia, uant, antmod, mdate, mtime, licence, GETUTCDATE()
                     FROM ' + @FtAnteTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
@@ -180,12 +200,26 @@ BEGIN
             END
 
             -- Archive FT_CHAN if it exists
+            -- Actual columns (52): cmd, recstat, call1(PK), call2(PK), bndcde(PK), splan, hl, vh, chid(PK),
+            --                      freqtx, poltx, freqrx, polrx, stattx, statrx, statdt, servtx, servrx,
+            --                      eqpttx, eqptrx, pwrtx1/2/3, pwrrx1/2/3, bwdttx/rx, emscod1-6tx/rx,
+            --                      eqptcod, ctyuse, tstnid, mdate, mtime
             IF OBJECT_ID(@FtChanTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_CHAN 
-                        (RunKey, PdfName, call1, call2, bndcde, chid, freqtx, freqrx, pwrtx, pwrrx, traftx, trafrx, eqpttx, eqptrx, stattx, statrx, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, call1, call2, bndcde, chid, freqtx, freqrx, pwrtx, pwrrx, traftx, trafrx, eqpttx, eqptrx, stattx, statrx, cmd, GETUTCDATE()
+                        (RunKey, PdfName, cmd, recstat, call1, call2, bndcde, splan, hl, vh, chid,
+                         freqtx, poltx, freqrx, polrx, stattx, statrx, statdt, servtx, servrx,
+                         eqpttx, eqptrx, pwrtx1, pwrtx2, pwrtx3, pwrrx1, pwrrx2, pwrrx3,
+                         bwdttx, bwdtrx, emscod1tx, emscod2tx, emscod3tx, emscod4tx, emscod5tx, emscod6tx,
+                         emscod1rx, emscod2rx, emscod3rx, emscod4rx, emscod5rx, emscod6rx,
+                         eqptcod, ctyuse, tstnid, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, cmd, recstat, call1, call2, bndcde, splan, hl, vh, chid,
+                           freqtx, poltx, freqrx, polrx, stattx, statrx, statdt, servtx, servrx,
+                           eqpttx, eqptrx, pwrtx1, pwrtx2, pwrtx3, pwrrx1, pwrrx2, pwrrx3,
+                           bwdttx, bwdtrx, emscod1tx, emscod2tx, emscod3tx, emscod4tx, emscod5tx, emscod6tx,
+                           emscod1rx, emscod2rx, emscod3rx, emscod4rx, emscod5rx, emscod6rx,
+                           eqptcod, ctyuse, tstnid, mdate, mtime, GETUTCDATE()
                     FROM ' + @FtChanTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
@@ -193,12 +227,13 @@ BEGIN
             END
 
             -- Archive FT_CHNG_CALL if it exists
+            -- Actual columns (3): newcall1(PK), oldcall1(PK), name
             IF OBJECT_ID(@FtChngCallTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFT_CHNG_CALL 
-                        (RunKey, PdfName, oldcall1, oldcall2, newcall1, newcall2, chngdate, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, oldcall1, oldcall2, newcall1, newcall2, chngdate, cmd, GETUTCDATE()
+                        (RunKey, PdfName, newcall1, oldcall1, name, ArchivedAt)
+                    SELECT @RunKey, @PdfName, newcall1, oldcall1, name, GETUTCDATE()
                     FROM ' + @FtChngCallTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 

@@ -93,6 +93,7 @@ GO
 -- =============================================================================
 
 -- Archive table for FT_TITL (Title/metadata)
+-- Actual columns: validated, namef, source, descr, mdate, mtime
 IF OBJECT_ID(N'tsip_archive.ArchiveFT_TITL', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFT_TITL;
 GO
@@ -101,11 +102,12 @@ CREATE TABLE tsip_archive.ArchiveFT_TITL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
-    title        CHAR(80) NULL,
-    cdate        CHAR(10) NULL,                -- Creation date
+    validated    CHAR(1) NULL,                 -- Validation flag
+    namef        CHAR(16) NULL,                -- File name
+    source       CHAR(6) NULL,                 -- Source identifier
+    descr        CHAR(40) NULL,                -- Description
     mdate        CHAR(10) NULL,                -- Modification date
     mtime        CHAR(8) NULL,                 -- Modification time
-    cmd          CHAR(1) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFT_TITL PRIMARY KEY (ArchiveId)
 );
@@ -115,6 +117,7 @@ CREATE INDEX IX_ArchiveFT_TITL_RunKey ON tsip_archive.ArchiveFT_TITL (RunKey);
 GO
 
 -- Archive table for FT_SHRL (Shared link approvals)
+-- Actual columns: userid, mdate, mtime
 IF OBJECT_ID(N'tsip_archive.ArchiveFT_SHRL', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFT_SHRL;
 GO
@@ -123,12 +126,9 @@ CREATE TABLE tsip_archive.ArchiveFT_SHRL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
-    call1        CHAR(9) NULL,
-    call2        CHAR(9) NULL,
-    bndcde       CHAR(4) NULL,
-    shession     CHAR(10) NULL,                -- Sharing session
-    approval     CHAR(1) NULL,                 -- Approval flag
-    cmd          CHAR(1) NULL,
+    userid       CHAR(8) NULL,                 -- User identifier
+    mdate        CHAR(10) NULL,                -- Modification date
+    mtime        CHAR(8) NULL,                 -- Modification time
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFT_SHRL PRIMARY KEY (ArchiveId)
 );
@@ -138,6 +138,8 @@ CREATE INDEX IX_ArchiveFT_SHRL_RunKey ON tsip_archive.ArchiveFT_SHRL (RunKey);
 GO
 
 -- Archive table for FT_SITE
+-- Actual columns: cmd, recstat, call1(PK), name, prov, oper, latit, longit, grnd, stats, sdate, loc,
+--                 icaccount, reg, spoint, nots, oprtyp, snumb, notwr, bandwd1-8, mdate, mtime
 IF OBJECT_ID(N'tsip_archive.ArchiveFT_SITE', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFT_SITE;
 GO
@@ -146,13 +148,35 @@ CREATE TABLE tsip_archive.ArchiveFT_SITE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,       -- Links to ArchiveTT_PARM.RunKey
     PdfName      NVARCHAR(128) NOT NULL,       -- TS PDF name (= proname)
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
     call1        CHAR(9) NULL,                 -- Site's call sign (primary key in source)
-    name1        CHAR(32) NULL,                -- Site's name
+    name         CHAR(32) NULL,                -- Site's name (NOT name1!)
+    prov         CHAR(2) NULL,                 -- Province
     oper         CHAR(6) NULL,                 -- Site's operator
     latit        INT NULL,
     longit       INT NULL,
     grnd         FLOAT NULL,
-    cmd          CHAR(1) NULL,
+    stats        CHAR(2) NULL,
+    sdate        CHAR(10) NULL,
+    loc          CHAR(40) NULL,
+    icaccount    CHAR(10) NULL,
+    reg          CHAR(1) NULL,
+    spoint       CHAR(4) NULL,
+    nots         CHAR(60) NULL,
+    oprtyp       CHAR(1) NULL,
+    snumb        CHAR(8) NULL,
+    notwr        CHAR(40) NULL,
+    bandwd1      CHAR(6) NULL,
+    bandwd2      CHAR(6) NULL,
+    bandwd3      CHAR(6) NULL,
+    bandwd4      CHAR(6) NULL,
+    bandwd5      CHAR(6) NULL,
+    bandwd6      CHAR(6) NULL,
+    bandwd7      CHAR(6) NULL,
+    bandwd8      CHAR(6) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFT_SITE PRIMARY KEY (ArchiveId)
 );
@@ -162,6 +186,9 @@ CREATE INDEX IX_ArchiveFT_SITE_RunKey ON tsip_archive.ArchiveFT_SITE (RunKey);
 GO
 
 -- Archive table for FT_ANTE
+-- Actual columns (37): cmd, recstat, call1(PK), call2(PK), bndcde(PK), anum(PK), ause, acode, aht, azmth, elvtn,
+--                      dist, offazm, tazmth, telvtn, tgain, rgain, apat1/2, adl, saze, agtpat, elo, azi, pol,
+--                      patnum, adbadj, alossn, agama, atheta, aphia, uant, antmod, mdate, mtime, licence
 IF OBJECT_ID(N'tsip_archive.ArchiveFT_ANTE', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFT_ANTE;
 GO
@@ -170,18 +197,42 @@ CREATE TABLE tsip_archive.ArchiveFT_ANTE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
     call1        CHAR(9) NULL,
     call2        CHAR(9) NULL,
     bndcde       CHAR(4) NULL,
     anum         SMALLINT NULL,
+    ause         CHAR(1) NULL,
     acode        CHAR(12) NULL,
     aht          FLOAT NULL,
     azmth        FLOAT NULL,
     elvtn        FLOAT NULL,
-    gain         FLOAT NULL,
     dist         FLOAT NULL,
     offazm       CHAR(1) NULL,
-    cmd          CHAR(1) NULL,
+    tazmth       FLOAT NULL,
+    telvtn       FLOAT NULL,
+    tgain        FLOAT NULL,                   -- Transmit gain (NOT just 'gain')
+    rgain        FLOAT NULL,                   -- Receive gain
+    apat1        CHAR(12) NULL,
+    apat2        CHAR(12) NULL,
+    adl          FLOAT NULL,
+    saze         FLOAT NULL,
+    agtpat       FLOAT NULL,
+    elo          FLOAT NULL,
+    azi          FLOAT NULL,
+    pol          CHAR(2) NULL,
+    patnum       CHAR(8) NULL,
+    adbadj       FLOAT NULL,
+    alossn       FLOAT NULL,
+    agama        FLOAT NULL,
+    atheta       FLOAT NULL,
+    aphia        FLOAT NULL,
+    uant         CHAR(1) NULL,
+    antmod       CHAR(8) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
+    licence      CHAR(12) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFT_ANTE PRIMARY KEY (ArchiveId)
 );
@@ -191,6 +242,9 @@ CREATE INDEX IX_ArchiveFT_ANTE_RunKey ON tsip_archive.ArchiveFT_ANTE (RunKey);
 GO
 
 -- Archive table for FT_CHAN
+-- Actual columns (52): cmd, recstat, call1(PK), call2(PK), bndcde(PK), splan, hl, vh, chid(PK), freqtx, poltx,
+--                      freqrx, polrx, stattx, statrx, statdt, servtx, servrx, eqpttx, eqptrx, pwrtx1/2/3,
+--                      pwrrx1/2/3, bwdttx/rx, emscod1-6tx/rx, eqptcod, ctyuse, tstnid, mdate, mtime
 IF OBJECT_ID(N'tsip_archive.ArchiveFT_CHAN', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFT_CHAN;
 GO
@@ -199,21 +253,51 @@ CREATE TABLE tsip_archive.ArchiveFT_CHAN (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
     call1        CHAR(9) NULL,
     call2        CHAR(9) NULL,
     bndcde       CHAR(4) NULL,
+    splan        CHAR(12) NULL,
+    hl           CHAR(1) NULL,
+    vh           CHAR(1) NULL,
     chid         CHAR(4) NULL,
     freqtx       FLOAT NULL,
+    poltx        CHAR(2) NULL,
     freqrx       FLOAT NULL,
-    pwrtx        FLOAT NULL,
-    pwrrx        FLOAT NULL,
-    traftx       CHAR(6) NULL,
-    trafrx       CHAR(6) NULL,
-    eqpttx       CHAR(8) NULL,
-    eqptrx       CHAR(8) NULL,
+    polrx        CHAR(2) NULL,
     stattx       CHAR(1) NULL,
     statrx       CHAR(1) NULL,
-    cmd          CHAR(1) NULL,
+    statdt       CHAR(10) NULL,
+    servtx       CHAR(4) NULL,
+    servrx       CHAR(4) NULL,
+    eqpttx       CHAR(8) NULL,
+    eqptrx       CHAR(8) NULL,
+    pwrtx1       FLOAT NULL,                   -- Power TX 1 (NOT just pwrtx)
+    pwrtx2       FLOAT NULL,
+    pwrtx3       FLOAT NULL,
+    pwrrx1       FLOAT NULL,                   -- Power RX 1 (NOT just pwrrx)
+    pwrrx2       FLOAT NULL,
+    pwrrx3       FLOAT NULL,
+    bwdttx       FLOAT NULL,
+    bwdtrx       FLOAT NULL,
+    emscod1tx    CHAR(6) NULL,
+    emscod2tx    CHAR(6) NULL,
+    emscod3tx    CHAR(6) NULL,
+    emscod4tx    CHAR(6) NULL,
+    emscod5tx    CHAR(6) NULL,
+    emscod6tx    CHAR(6) NULL,
+    emscod1rx    CHAR(6) NULL,
+    emscod2rx    CHAR(6) NULL,
+    emscod3rx    CHAR(6) NULL,
+    emscod4rx    CHAR(6) NULL,
+    emscod5rx    CHAR(6) NULL,
+    emscod6rx    CHAR(6) NULL,
+    eqptcod      CHAR(6) NULL,
+    ctyuse       CHAR(3) NULL,
+    tstnid       CHAR(14) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFT_CHAN PRIMARY KEY (ArchiveId)
 );
@@ -223,6 +307,7 @@ CREATE INDEX IX_ArchiveFT_CHAN_RunKey ON tsip_archive.ArchiveFT_CHAN (RunKey);
 GO
 
 -- Archive table for FT_CHNG_CALL (Call sign change history)
+-- Actual columns (3): newcall1(PK), oldcall1(PK), name
 IF OBJECT_ID(N'tsip_archive.ArchiveFT_CHNG_CALL', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFT_CHNG_CALL;
 GO
@@ -231,12 +316,9 @@ CREATE TABLE tsip_archive.ArchiveFT_CHNG_CALL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
-    oldcall1     CHAR(9) NULL,                 -- Old call sign 1
-    oldcall2     CHAR(9) NULL,                 -- Old call sign 2
-    newcall1     CHAR(9) NULL,                 -- New call sign 1
-    newcall2     CHAR(9) NULL,                 -- New call sign 2
-    chngdate     CHAR(10) NULL,                -- Change date
-    cmd          CHAR(1) NULL,
+    newcall1     CHAR(9) NULL,                 -- New call sign 1 (PK in source)
+    oldcall1     CHAR(9) NULL,                 -- Old call sign 1 (PK in source)
+    name         CHAR(32) NULL,                -- Name
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFT_CHNG_CALL PRIMARY KEY (ArchiveId)
 );
