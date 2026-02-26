@@ -7,10 +7,14 @@
     "analyze": "node analyzer.js",
     "report": "node report-generator.js",
     "full": "node analyzer.js && node report-generator.js",
-    "test-path": "node -e \"const c=require('./config'); console.log('MICS# Path:', c.MICS_PATH); console.log('Exists:', require('fs').existsSync(c.MICS_PATH));\""
+    "test-path": "node -e \"const c=require('./config'); console.log('MICS# Path:', c.MICS_PATH); console.log('Exists:', require('fs').existsSync(c.MICS_PATH));\"",
+    "db-check": "node db-schema-check.js"
   },
-  "keywords": ["code-analysis", "csharp", "mics", "read-only"],
+  "keywords": ["code-analysis", "csharp", "mics", "read-only", "sql-server"],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "mssql": "^10.0.1"
+  }
 }
 

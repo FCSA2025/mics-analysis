@@ -31,12 +31,31 @@ sqlcmd -S DESKTOP-EEUSAQH -U CursorAiAccess -P Cack31415 -d <DatabaseName> -Q "S
 
 ---
 
+## Programmatic Access (Node.js)
+
+The `analyzer/` directory contains a comprehensive database utility toolkit:
+
+```bash
+cd analyzer
+npm install
+node db-util.js test              # Test connection
+node db-util.js describe <table>  # Inspect table structure
+node db-util.js compare FT_SITE   # Compare archive vs actual
+node db-util.js interactive       # Interactive SQL mode
+```
+
+See [analyzer/README.md](../../analyzer/README.md) for full documentation.
+
+Configuration is in `analyzer/db-config.js` (currently set to `micsprod`).
+
+---
+
 ## Notes
 
-- Confirmed working: January 2026.
+- Confirmed working: February 2026.
 - Use for read-only or dev work (schema comparison, T-SQL port); avoid production writes unless intended.
 - Keep this file out of public repositories if the repo is shared.
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*
