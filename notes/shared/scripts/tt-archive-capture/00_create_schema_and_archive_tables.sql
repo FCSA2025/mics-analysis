@@ -18,6 +18,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'tsip_archive')
 GO
 
 -- Archive table for TT_PARM (one row per run)
+-- Verified from micsprod tt_001tom_001_parm (27 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveTT_PARM', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveTT_PARM;
 GO
@@ -25,65 +26,228 @@ GO
 CREATE TABLE tsip_archive.ArchiveTT_PARM (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
-    proname      CHAR(16) NULL,   -- TS (Terrestrial Station) file/PDF name
-    envname      CHAR(16) NULL,   -- ES (Earth Station) file/PDF name
+    protype      CHAR(1) NULL,
+    envtype      CHAR(8) NULL,
+    proname      CHAR(16) NULL,      -- TS (Terrestrial Station) file/PDF name
+    envname      CHAR(16) NULL,      -- ES (Earth Station) file/PDF name
+    tsorbout     CHAR(1) NULL,
+    spherecalc   CHAR(1) NULL,
+    fsep         FLOAT NULL,
+    coordist     FLOAT NULL,
+    analopt      CHAR(4) NULL,
+    margin       FLOAT NULL,
+    numchan      SMALLINT NULL,
+    chancodes    CHAR(19) NULL,
+    tempant      CHAR(15) NULL,
+    tempctx      CHAR(15) NULL,
+    tempplan     CHAR(15) NULL,
+    tempequip    CHAR(15) NULL,
+    country      CHAR(3) NULL,
+    selsites     CHAR(15) NULL,
+    numcodes     SMALLINT NULL,
+    codes        CHAR(164) NULL,
     runname      CHAR(5) NULL,
+    reports      INT NULL,
     numcases     INT NULL,
+    numtecases   INT NULL,
+    parmparm     CHAR(50) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveTT_PARM PRIMARY KEY (ArchiveId)
 );
 GO
 
+CREATE INDEX IX_ArchiveTT_PARM_RunKey ON tsip_archive.ArchiveTT_PARM (RunKey);
+GO
+
 -- Archive table for TT_SITE (many rows per run)
+-- Verified from micsprod tt_001tom_001_site (31 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveTT_SITE', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveTT_SITE;
 GO
 
 CREATE TABLE tsip_archive.ArchiveTT_SITE (
-    RunKey     NVARCHAR(128) NOT NULL,
-    SiteRowId  BIGINT IDENTITY(1,1) NOT NULL,
-    intcall1   CHAR(9) NULL,
-    viccall1   CHAR(9) NULL,
-    caseno     INT NULL,
-    ArchivedAt DATETIME2(0) NOT NULL,
-    CONSTRAINT PK_ArchiveTT_SITE PRIMARY KEY (RunKey, SiteRowId)
+    ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
+    RunKey       NVARCHAR(128) NOT NULL,
+    interferer   CHAR(1) NULL,
+    intcall1     CHAR(9) NULL,
+    intcall2     CHAR(9) NULL,
+    viccall1     CHAR(9) NULL,
+    viccall2     CHAR(9) NULL,
+    caseno       INT NULL,
+    subcases     INT NULL,
+    intname1     CHAR(32) NULL,
+    intname2     CHAR(32) NULL,
+    vicname1     CHAR(32) NULL,
+    vicname2     CHAR(32) NULL,
+    intoper      CHAR(6) NULL,
+    intoper2     CHAR(6) NULL,
+    vicoper      CHAR(6) NULL,
+    vicoper2     CHAR(6) NULL,
+    intlatit     INT NULL,
+    intlongit    INT NULL,
+    intgrnd      FLOAT NULL,
+    viclatit     INT NULL,
+    viclongit    INT NULL,
+    vicgrnd      FLOAT NULL,
+    report       SMALLINT NULL,
+    int1int2dist FLOAT NULL,
+    vic1vic2dist FLOAT NULL,
+    int1vic1dist FLOAT NULL,
+    distadv      FLOAT NULL,
+    intoffax     FLOAT NULL,
+    vicoffax     FLOAT NULL,
+    intvicaz     FLOAT NULL,
+    vicintaz     FLOAT NULL,
+    processed    INT NULL,
+    ArchivedAt   DATETIME2(0) NOT NULL,
+    CONSTRAINT PK_ArchiveTT_SITE PRIMARY KEY (ArchiveId)
 );
 GO
 
+CREATE INDEX IX_ArchiveTT_SITE_RunKey ON tsip_archive.ArchiveTT_SITE (RunKey);
+GO
+
 -- Archive table for TT_ANTE (many rows per run)
+-- Verified from micsprod tt_001tom_001_ante (47 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveTT_ANTE', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveTT_ANTE;
 GO
 
 CREATE TABLE tsip_archive.ArchiveTT_ANTE (
-    RunKey     NVARCHAR(128) NOT NULL,
-    AnteRowId  BIGINT IDENTITY(1,1) NOT NULL,
-    intcall1   CHAR(9) NULL,
-    viccall1   CHAR(9) NULL,
-    caseno     INT NULL,
-    intacode   CHAR(12) NULL,
-    vicacode   CHAR(12) NULL,
-    ArchivedAt DATETIME2(0) NOT NULL,
-    CONSTRAINT PK_ArchiveTT_ANTE PRIMARY KEY (RunKey, AnteRowId)
+    ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
+    RunKey       NVARCHAR(128) NOT NULL,
+    interferer   CHAR(1) NULL,
+    intcall1     CHAR(9) NULL,
+    intcall2     CHAR(9) NULL,
+    intbndcde    CHAR(4) NULL,
+    intanum      SMALLINT NULL,
+    viccall1     CHAR(9) NULL,
+    viccall2     CHAR(9) NULL,
+    vicbndcde    CHAR(4) NULL,
+    caseno       INT NULL,
+    vicanum      SMALLINT NULL,
+    intacode     CHAR(12) NULL,
+    vicacode     CHAR(12) NULL,
+    report       SMALLINT NULL,
+    subcaseno    INT NULL,
+    adiscctxh    FLOAT NULL,
+    adiscctxv    FLOAT NULL,
+    adisccrxh    FLOAT NULL,
+    adisccrxv    FLOAT NULL,
+    adiscxtxh    FLOAT NULL,
+    adiscxtxv    FLOAT NULL,
+    adiscxrxh    FLOAT NULL,
+    adiscxrxv    FLOAT NULL,
+    processed    INT NULL,
+    intause      CHAR(4) NULL,
+    vicause      CHAR(4) NULL,
+    intoffaxa    FLOAT NULL,
+    vicoffaxa    FLOAT NULL,
+    intgain      FLOAT NULL,
+    vicgain      FLOAT NULL,
+    intaxref     CHAR(12) NULL,
+    intamodel    CHAR(16) NULL,
+    vicaxref     CHAR(12) NULL,
+    vicamodel    CHAR(16) NULL,
+    intaoffax    CHAR(1) NULL,
+    inthopaz     FLOAT NULL,
+    intantaz     FLOAT NULL,
+    intoffantax  FLOAT NULL,
+    vicaoffax    CHAR(1) NULL,
+    vichopaz     FLOAT NULL,
+    vicantaz     FLOAT NULL,
+    vicoffantax  FLOAT NULL,
+    intaht       FLOAT NULL,
+    vicaht       FLOAT NULL,
+    intvicel     FLOAT NULL,
+    vicintel     FLOAT NULL,
+    intelev      FLOAT NULL,
+    vicelev      FLOAT NULL,
+    ArchivedAt   DATETIME2(0) NOT NULL,
+    CONSTRAINT PK_ArchiveTT_ANTE PRIMARY KEY (ArchiveId)
 );
 GO
 
+CREATE INDEX IX_ArchiveTT_ANTE_RunKey ON tsip_archive.ArchiveTT_ANTE (RunKey);
+GO
+
 -- Archive table for TT_CHAN (many rows per run)
+-- Verified from micsprod tt_001tom_001_chan (60 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveTT_CHAN', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveTT_CHAN;
 GO
 
 CREATE TABLE tsip_archive.ArchiveTT_CHAN (
-    RunKey     NVARCHAR(128) NOT NULL,
-    ChanRowId  BIGINT IDENTITY(1,1) NOT NULL,
-    intcall1   CHAR(9) NULL,
-    viccall1   CHAR(9) NULL,
-    caseno     INT NULL,
-    resti      FLOAT NULL,   -- margin (dB)
-    freqsep    FLOAT NULL,   -- frequency separation (MHz)
-    ArchivedAt DATETIME2(0) NOT NULL,
-    CONSTRAINT PK_ArchiveTT_CHAN PRIMARY KEY (RunKey, ChanRowId)
+    ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
+    RunKey       NVARCHAR(128) NOT NULL,
+    interferer   CHAR(1) NULL,
+    intcall1     CHAR(9) NULL,
+    intcall2     CHAR(9) NULL,
+    intbndcde    CHAR(4) NULL,
+    intanum      SMALLINT NULL,
+    intchid      CHAR(4) NULL,
+    viccall1     CHAR(9) NULL,
+    viccall2     CHAR(9) NULL,
+    vicbndcde    CHAR(4) NULL,
+    vicanum      SMALLINT NULL,
+    caseno       INT NULL,
+    vicchid      CHAR(4) NULL,
+    intpolar     CHAR(1) NULL,
+    vicpolar     CHAR(1) NULL,
+    intstattx    CHAR(1) NULL,
+    vicstatrx    CHAR(1) NULL,
+    inttraftx    CHAR(6) NULL,
+    victrafrx    CHAR(6) NULL,
+    inteqpttx    CHAR(8) NULL,
+    viceqptrx    CHAR(8) NULL,
+    intfreqtx    FLOAT NULL,
+    vicfreqrx    FLOAT NULL,
+    vicpwrrx     FLOAT NULL,
+    intpwrtx     FLOAT NULL,
+    intafsltx    FLOAT NULL,
+    vicafslrx    FLOAT NULL,
+    rxant        SMALLINT NULL,
+    txant        SMALLINT NULL,
+    ctxinttraftx CHAR(6) NULL,
+    ctxvictrafrx CHAR(6) NULL,
+    ctxeqpt      CHAR(8) NULL,
+    calctype     CHAR(3) NULL,
+    report       SMALLINT NULL,
+    totantdisc   FLOAT NULL,
+    freqsep      FLOAT NULL,
+    reqdcalc     FLOAT NULL,
+    patloss      FLOAT NULL,
+    calcico      FLOAT NULL,
+    calcixp      FLOAT NULL,
+    resti        FLOAT NULL,         -- margin (dB)
+    eirpadv      FLOAT NULL,
+    tiltdisc     FLOAT NULL,
+    pathloss80   FLOAT NULL,
+    calcico80    FLOAT NULL,
+    calcixp80    FLOAT NULL,
+    reqd80       FLOAT NULL,
+    resti80      FLOAT NULL,
+    pathloss99   FLOAT NULL,
+    calcico99    FLOAT NULL,
+    calcixp99    FLOAT NULL,
+    reqd99       FLOAT NULL,
+    resti99      FLOAT NULL,
+    ohresult     SMALLINT NULL,
+    rqco         FLOAT NULL,
+    processed    INT NULL,
+    ctxinteqpt   CHAR(8) NULL,
+    inteqtype    CHAR(1) NULL,
+    viceqtype    CHAR(1) NULL,
+    intbwchans   FLOAT NULL,
+    vicbwchans   FLOAT NULL,
+    ArchivedAt   DATETIME2(0) NOT NULL,
+    CONSTRAINT PK_ArchiveTT_CHAN PRIMARY KEY (ArchiveId)
 );
+GO
+
+CREATE INDEX IX_ArchiveTT_CHAN_RunKey ON tsip_archive.ArchiveTT_CHAN (RunKey);
 GO
 
 -- =============================================================================
@@ -338,6 +502,7 @@ GO
 -- =============================================================================
 
 -- Archive table for FE_TITL (Title/metadata)
+-- Verified from micsprod fe_1_ne_pas_effacer_titl (6 columns) - Same as FT_TITL
 IF OBJECT_ID(N'tsip_archive.ArchiveFE_TITL', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFE_TITL;
 GO
@@ -346,11 +511,12 @@ CREATE TABLE tsip_archive.ArchiveFE_TITL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
-    title        CHAR(80) NULL,
-    cdate        CHAR(10) NULL,
+    validated    CHAR(1) NULL,
+    namef        CHAR(16) NULL,
+    source       CHAR(6) NULL,
+    descr        CHAR(40) NULL,
     mdate        CHAR(10) NULL,
     mtime        CHAR(8) NULL,
-    cmd          CHAR(1) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFE_TITL PRIMARY KEY (ArchiveId)
 );
@@ -360,6 +526,7 @@ CREATE INDEX IX_ArchiveFE_TITL_RunKey ON tsip_archive.ArchiveFE_TITL (RunKey);
 GO
 
 -- Archive table for FE_SHRL (Shared link approvals)
+-- Verified from micsprod fe_1_ne_pas_effacer_shrl (3 columns) - Same as FT_SHRL
 IF OBJECT_ID(N'tsip_archive.ArchiveFE_SHRL', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFE_SHRL;
 GO
@@ -368,11 +535,9 @@ CREATE TABLE tsip_archive.ArchiveFE_SHRL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
-    location     CHAR(10) NULL,
-    call1        CHAR(9) NULL,
-    shession     CHAR(10) NULL,
-    approval     CHAR(1) NULL,
-    cmd          CHAR(1) NULL,
+    userid       CHAR(8) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFE_SHRL PRIMARY KEY (ArchiveId)
 );
@@ -382,23 +547,33 @@ CREATE INDEX IX_ArchiveFE_SHRL_RunKey ON tsip_archive.ArchiveFE_SHRL (RunKey);
 GO
 
 -- Archive table for FE_SITE
+-- Verified from micsprod fe_1_ne_pas_effacer_site (18 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveFE_SITE', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFE_SITE;
 GO
 
 CREATE TABLE tsip_archive.ArchiveFE_SITE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,       -- Links to ArchiveTT_PARM.RunKey
-    PdfName      NVARCHAR(128) NOT NULL,       -- ES PDF name (= envname)
+    RunKey       NVARCHAR(128) NOT NULL,
+    PdfName      NVARCHAR(128) NOT NULL,
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
     location     CHAR(10) NULL,
     name         CHAR(16) NULL,
+    prov         CHAR(2) NULL,
     oper         CHAR(6) NULL,
     latit        INT NULL,
     longit       INT NULL,
-    grnd         FLOAT NULL,
-    rainzone     SMALLINT NULL,
-    radiozone    CHAR(2) NULL,
-    cmd          CHAR(1) NULL,
+    grnd         REAL NULL,
+    radio        CHAR(2) NULL,
+    rain         SMALLINT NULL,
+    sdate        CHAR(10) NULL,
+    stats        CHAR(1) NULL,
+    nots         CHAR(4) NULL,
+    oprtyp       CHAR(2) NULL,
+    reg          CHAR(2) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFE_SITE PRIMARY KEY (ArchiveId)
 );
@@ -408,6 +583,7 @@ CREATE INDEX IX_ArchiveFE_SITE_RunKey ON tsip_archive.ArchiveFE_SITE (RunKey);
 GO
 
 -- Archive table for FE_AZIM (Azimuth records)
+-- Verified from micsprod fe_1_ne_pas_effacer_azim (11 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveFE_AZIM', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFE_AZIM;
 GO
@@ -416,12 +592,17 @@ CREATE TABLE tsip_archive.ArchiveFE_AZIM (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
-    location     CHAR(10) NULL,
-    az1          FLOAT NULL,                   -- Azimuth 1
-    az2          FLOAT NULL,                   -- Azimuth 2
-    el1          FLOAT NULL,                   -- Elevation 1
-    el2          FLOAT NULL,                   -- Elevation 2
     cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
+    deleteall    CHAR(1) NULL,
+    location     CHAR(10) NULL,
+    call1        CHAR(9) NULL,
+    azim         REAL NULL,
+    elev         REAL NULL,
+    dist         REAL NULL,
+    loss         REAL NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFE_AZIM PRIMARY KEY (ArchiveId)
 );
@@ -431,6 +612,7 @@ CREATE INDEX IX_ArchiveFE_AZIM_RunKey ON tsip_archive.ArchiveFE_AZIM (RunKey);
 GO
 
 -- Archive table for FE_ANTE
+-- Verified from micsprod fe_1_ne_pas_effacer_ante (35 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveFE_ANTE', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFE_ANTE;
 GO
@@ -439,19 +621,41 @@ CREATE TABLE tsip_archive.ArchiveFE_ANTE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
     location     CHAR(10) NULL,
     call1        CHAR(9) NULL,
-    band         CHAR(4) NULL,
+    txband       CHAR(4) NULL,
+    rxband       CHAR(4) NULL,
     acodetx      CHAR(12) NULL,
     acoderx      CHAR(12) NULL,
-    aht          FLOAT NULL,
-    az           FLOAT NULL,
-    el           FLOAT NULL,
-    g_t          FLOAT NULL,
-    satname      CHAR(16) NULL,
-    satoper      CHAR(3) NULL,
+    g_t          REAL NULL,
+    lnat         REAL NULL,
+    aht          REAL NULL,
+    afslt        REAL NULL,
+    afslr        REAL NULL,
+    txhgmax      REAL NULL,
+    rxhgmax      REAL NULL,
     satlongit    INT NULL,
-    cmd          CHAR(1) NULL,
+    satlong      REAL NULL,
+    satlongs     CHAR(1) NULL,
+    az           REAL NULL,
+    el           REAL NULL,
+    sarc1        REAL NULL,
+    sarc2        REAL NULL,
+    rxpre        REAL NULL,
+    txpre        REAL NULL,
+    rxtro        REAL NULL,
+    txtro        REAL NULL,
+    licence      CHAR(13) NULL,
+    satname      CHAR(16) NULL,
+    stata        CHAR(1) NULL,
+    nota         CHAR(4) NULL,
+    op2          CHAR(2) NULL,
+    antref       INT NULL,
+    orbit        CHAR(2) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFE_ANTE PRIMARY KEY (ArchiveId)
 );
@@ -461,6 +665,7 @@ CREATE INDEX IX_ArchiveFE_ANTE_RunKey ON tsip_archive.ArchiveFE_ANTE (RunKey);
 GO
 
 -- Archive table for FE_CHAN
+-- Verified from micsprod fe_1_ne_pas_effacer_chan (29 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveFE_CHAN', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFE_CHAN;
 GO
@@ -469,22 +674,35 @@ CREATE TABLE tsip_archive.ArchiveFE_CHAN (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
     location     CHAR(10) NULL,
     call1        CHAR(9) NULL,
-    band         CHAR(4) NULL,
     chid         CHAR(4) NULL,
     freqtx       FLOAT NULL,
-    freqrx       FLOAT NULL,
-    pwrtx        FLOAT NULL,
-    pwrrx        FLOAT NULL,
-    eirp         FLOAT NULL,
-    traftx       CHAR(6) NULL,
-    trafrx       CHAR(6) NULL,
+    poltx        CHAR(1) NULL,
+    maxtxpower   REAL NULL,
+    pwrtx        REAL NULL,
+    p4khz        REAL NULL,
     eqpttx       CHAR(8) NULL,
-    eqptrx       CHAR(8) NULL,
+    traftx       CHAR(6) NULL,
     stattx       CHAR(1) NULL,
+    feetx        CHAR(2) NULL,
+    freqrx       FLOAT NULL,
+    polrx        CHAR(1) NULL,
+    pwrrx        REAL NULL,
+    eqptrx       CHAR(8) NULL,
+    trafrx       CHAR(6) NULL,
     statrx       CHAR(1) NULL,
-    cmd          CHAR(1) NULL,
+    i20          REAL NULL,
+    it01         REAL NULL,
+    ip01         REAL NULL,
+    feerx        CHAR(2) NULL,
+    notc         CHAR(4) NULL,
+    srvctx       CHAR(6) NULL,
+    srvcrx       CHAR(6) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFE_CHAN PRIMARY KEY (ArchiveId)
 );
@@ -494,6 +712,7 @@ CREATE INDEX IX_ArchiveFE_CHAN_RunKey ON tsip_archive.ArchiveFE_CHAN (RunKey);
 GO
 
 -- Archive table for FE_CLOC (Location change history)
+-- Verified from micsprod fe_1_ne_pas_effacer_cloc (3 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveFE_CLOC', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFE_CLOC;
 GO
@@ -502,10 +721,9 @@ CREATE TABLE tsip_archive.ArchiveFE_CLOC (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
-    oldlocation  CHAR(10) NULL,                -- Old location
-    newlocation  CHAR(10) NULL,                -- New location
-    chngdate     CHAR(10) NULL,                -- Change date
-    cmd          CHAR(1) NULL,
+    newlocation  CHAR(10) NULL,
+    oldlocation  CHAR(10) NULL,
+    name         CHAR(16) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFE_CLOC PRIMARY KEY (ArchiveId)
 );
@@ -515,6 +733,7 @@ CREATE INDEX IX_ArchiveFE_CLOC_RunKey ON tsip_archive.ArchiveFE_CLOC (RunKey);
 GO
 
 -- Archive table for FE_CCAL (Call sign change history)
+-- Verified from micsprod fe_1_ne_pas_effacer_ccal (2 columns)
 IF OBJECT_ID(N'tsip_archive.ArchiveFE_CCAL', N'U') IS NOT NULL
     DROP TABLE tsip_archive.ArchiveFE_CCAL;
 GO
@@ -523,11 +742,8 @@ CREATE TABLE tsip_archive.ArchiveFE_CCAL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
     RunKey       NVARCHAR(128) NOT NULL,
     PdfName      NVARCHAR(128) NOT NULL,
-    location     CHAR(10) NULL,
-    oldcall1     CHAR(9) NULL,                 -- Old call sign
-    newcall1     CHAR(9) NULL,                 -- New call sign
-    chngdate     CHAR(10) NULL,                -- Change date
-    cmd          CHAR(1) NULL,
+    newcallsign  CHAR(9) NULL,
+    oldcallsign  CHAR(9) NULL,
     ArchivedAt   DATETIME2(0) NOT NULL,
     CONSTRAINT PK_ArchiveFE_CCAL PRIMARY KEY (ArchiveId)
 );

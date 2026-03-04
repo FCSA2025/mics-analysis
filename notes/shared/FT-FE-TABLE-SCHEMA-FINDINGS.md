@@ -1,4 +1,4 @@
-# FT/FE Table Schema Verification Findings
+# TT/FT/FE Table Schema Verification Findings
 
 **Date**: February 4, 2026  
 **Last Updated**: February 4, 2026  
@@ -10,8 +10,87 @@
 Direct database inspection revealed **significant discrepancies** between our original archive table definitions and actual production database schemas.
 
 ### Status
-- **FT Tables**: ✅ **FIXED** - All 6 FT archive tables corrected and verified against 3 random table groups
-- **FE Tables**: ⚠️ **PENDING** - Analysis and fixes still needed
+- **TT Tables**: ✅ **FIXED** - All 4 TT archive tables corrected (PARM: 27 cols, SITE: 31, ANTE: 47, CHAN: 60)
+- **FT Tables**: ✅ **FIXED** - All 6 FT archive tables corrected and verified
+- **FE Tables**: ✅ **FIXED** - All 8 FE archive tables corrected (TITL: 6, SHRL: 3, SITE: 18, AZIM: 11, ANTE: 35, CHAN: 29, CLOC: 3, CCAL: 2)
+
+---
+
+## TT Tables (TSIP Results) - ⚠️ PENDING FIXES
+
+### Critical Discovery
+Our original TT archive tables were based on **incomplete documentation**. Actual TT tables have significantly more columns:
+
+| Table | Archive Cols | Actual Cols | Missing |
+|-------|-------------|-------------|---------|
+| TT_PARM | 4 | 27 | **23** |
+| TT_SITE | 3 | 31 | **28** |
+| TT_ANTE | 5 | 47 | **42** |
+| TT_CHAN | 5 | 60 | **55** |
+
+### TT_PARM (27 columns)
+Verified from `tt_001tom_001_parm`:
+```
+protype CHAR(1), envtype CHAR(8), proname CHAR(16), envname CHAR(16),
+tsorbout CHAR(1), spherecalc CHAR(1), fsep FLOAT, coordist FLOAT,
+analopt CHAR(4), margin FLOAT, numchan SMALLINT, chancodes CHAR(19),
+tempant CHAR(15), tempctx CHAR(15), tempplan CHAR(15), tempequip CHAR(15),
+country CHAR(3), selsites CHAR(15), numcodes SMALLINT, codes CHAR(164),
+runname CHAR(5), reports INT, numcases INT, numtecases INT,
+parmparm CHAR(50), mdate CHAR(10), mtime CHAR(8)
+```
+
+### TT_SITE (31 columns)
+Verified from `tt_001tom_001_site`:
+```
+interferer CHAR(1), intcall1 CHAR(9), intcall2 CHAR(9), viccall1 CHAR(9),
+viccall2 CHAR(9), caseno INT, subcases INT, intname1 CHAR(32),
+intname2 CHAR(32), vicname1 CHAR(32), vicname2 CHAR(32), intoper CHAR(6),
+intoper2 CHAR(6), vicoper CHAR(6), vicoper2 CHAR(6), intlatit INT,
+intlongit INT, intgrnd FLOAT, viclatit INT, viclongit INT, vicgrnd FLOAT,
+report SMALLINT, int1int2dist FLOAT, vic1vic2dist FLOAT, int1vic1dist FLOAT,
+distadv FLOAT, intoffax FLOAT, vicoffax FLOAT, intvicaz FLOAT,
+vicintaz FLOAT, processed INT
+```
+
+### TT_ANTE (47 columns)
+Verified from `tt_001tom_001_ante`:
+```
+interferer CHAR(1), intcall1 CHAR(9), intcall2 CHAR(9), intbndcde CHAR(4),
+intanum SMALLINT, viccall1 CHAR(9), viccall2 CHAR(9), vicbndcde CHAR(4),
+caseno INT, vicanum SMALLINT, intacode CHAR(12), vicacode CHAR(12),
+report SMALLINT, subcaseno INT, adiscctxh FLOAT, adiscctxv FLOAT,
+adisccrxh FLOAT, adisccrxv FLOAT, adiscxtxh FLOAT, adiscxtxv FLOAT,
+adiscxrxh FLOAT, adiscxrxv FLOAT, processed INT, intause CHAR(4),
+vicause CHAR(4), intoffaxa FLOAT, vicoffaxa FLOAT, intgain FLOAT,
+vicgain FLOAT, intaxref CHAR(12), intamodel CHAR(16), vicaxref CHAR(12),
+vicamodel CHAR(16), intaoffax CHAR(1), inthopaz FLOAT, intantaz FLOAT,
+intoffantax FLOAT, vicaoffax CHAR(1), vichopaz FLOAT, vicantaz FLOAT,
+vicoffantax FLOAT, intaht FLOAT, vicaht FLOAT, intvicel FLOAT,
+vicintel FLOAT, intelev FLOAT, vicelev FLOAT
+```
+
+### TT_CHAN (60 columns)
+Verified from `tt_001tom_001_chan`:
+```
+interferer CHAR(1), intcall1 CHAR(9), intcall2 CHAR(9), intbndcde CHAR(4),
+intanum SMALLINT, intchid CHAR(4), viccall1 CHAR(9), viccall2 CHAR(9),
+vicbndcde CHAR(4), vicanum SMALLINT, caseno INT, vicchid CHAR(4),
+intpolar CHAR(1), vicpolar CHAR(1), intstattx CHAR(1), vicstatrx CHAR(1),
+inttraftx CHAR(6), victrafrx CHAR(6), inteqpttx CHAR(8), viceqptrx CHAR(8),
+intfreqtx FLOAT, vicfreqrx FLOAT, vicpwrrx FLOAT, intpwrtx FLOAT,
+intafsltx FLOAT, vicafslrx FLOAT, rxant SMALLINT, txant SMALLINT,
+ctxinttraftx CHAR(6), ctxvictrafrx CHAR(6), ctxeqpt CHAR(8), calctype CHAR(3),
+report SMALLINT, totantdisc FLOAT, freqsep FLOAT, reqdcalc FLOAT,
+patloss FLOAT, calcico FLOAT, calcixp FLOAT, resti FLOAT, eirpadv FLOAT,
+tiltdisc FLOAT, pathloss80 FLOAT, calcico80 FLOAT, calcixp80 FLOAT,
+reqd80 FLOAT, resti80 FLOAT, pathloss99 FLOAT, calcico99 FLOAT,
+calcixp99 FLOAT, reqd99 FLOAT, resti99 FLOAT, ohresult SMALLINT,
+rqco FLOAT, processed INT, ctxinteqpt CHAR(8), inteqtype CHAR(1),
+viceqtype CHAR(1), intbwchans FLOAT, vicbwchans FLOAT
+```
+
+---
 
 ## FT Tables (Terrestrial Station) - ✅ FIXED
 
@@ -47,96 +126,68 @@ node test-ft-archive-columns.js bmce.ft_f3268
 
 ---
 
-## FE Tables (Earth Station) - ⚠️ PENDING FIXES
+## FE Tables (Earth Station) - ✅ FIXED
 
-### FE_TITL (Title/Header)
-**Same structure as FT_TITL**:
+All FE archive tables have been corrected based on actual `micsprod` inspection.
+
+### Corrected Column Counts
+| Table | Columns | Status |
+|-------|---------|--------|
+| FE_TITL | 6 | ✅ Fixed (same as FT_TITL) |
+| FE_SHRL | 3 | ✅ Fixed (same as FT_SHRL) |
+| FE_SITE | 18 | ✅ Fixed |
+| FE_AZIM | 11 | ✅ Fixed |
+| FE_ANTE | 35 | ✅ Fixed |
+| FE_CHAN | 29 | ✅ Fixed |
+| FE_CLOC | 3 | ✅ Fixed |
+| FE_CCAL | 2 | ✅ Fixed |
+
+### FE_TITL (6 columns) - Same as FT_TITL
 ```
 validated CHAR(1), namef CHAR(16), source CHAR(6), descr CHAR(40), 
 mdate CHAR(10), mtime CHAR(8)
 ```
 
-### FE_SHRL (Shared List/Users)
-**Same structure as FT_SHRL**:
+### FE_SHRL (3 columns) - Same as FT_SHRL
 ```
 userid CHAR(8), mdate CHAR(10), mtime CHAR(8)
 ```
 
-### FE_SITE (Site Information)
-**Actual columns (18 total)**:
+### FE_SITE (18 columns)
 ```
-cmd, recstat, location(PK), name, prov, oper, latit, longit, grnd, 
+cmd, recstat, location, name, prov, oper, latit, longit, grnd,
 radio, rain, sdate, stats, nots, oprtyp, reg, mdate, mtime
 ```
 
-**Archive errors**:
-- `rainzone` should be `rain`
-- `radiozone` should be `radio`
-- Missing 9 columns
-
-### FE_AZIM (Azimuth)
-**Actual columns (11 total)**:
+### FE_AZIM (11 columns)
 ```
-cmd, recstat, deleteall, location(PK), call1(PK), azim(PK), elev, 
-dist, loss, mdate, mtime
+cmd, recstat, deleteall, location, call1, azim, elev, dist, loss, mdate, mtime
 ```
 
-**Archive errors**:
-- `az1`, `az2`, `el1`, `el2` don't exist
-- Uses `azim`, `elev` instead
-- Missing 5 columns
-
-### FE_ANTE (Antenna)
-**Actual columns (35 total)**:
+### FE_ANTE (35 columns)
 ```
-cmd, recstat, location(PK), call1(PK), txband, rxband, acodetx, 
-acoderx, g_t, lnat, aht, afslt, afslr, txhgmax, rxhgmax, satlongit, 
-satlong, satlongs, az, el, sarc1, sarc2, rxpre, txpre, rxtro, txtro, 
-licence, satname, stata, nota, op2, antref, orbit, mdate, mtime
+cmd, recstat, location, call1, txband, rxband, acodetx, acoderx,
+g_t, lnat, aht, afslt, afslr, txhgmax, rxhgmax, satlongit, satlong, satlongs,
+az, el, sarc1, sarc2, rxpre, txpre, rxtro, txtro, licence, satname,
+stata, nota, op2, antref, orbit, mdate, mtime
 ```
 
-**Archive errors**:
-- `band` should be `txband`/`rxband`
-- `satoper` doesn't exist
-- Missing 22 columns
-
-### FE_CHAN (Channel)
-**Actual columns (29 total)**:
+### FE_CHAN (29 columns)
 ```
-cmd, recstat, location(PK), call1(PK), chid(PK), freqtx, poltx, 
-maxtxpower, pwrtx, p4khz, eqpttx, traftx, stattx, feetx, freqrx, 
-polrx, pwrrx, eqptrx, trafrx, statrx, i20, it01, ip01, feerx, notc, 
-srvctx, srvcrx, mdate, mtime
+cmd, recstat, location, call1, chid, freqtx, poltx, maxtxpower, pwrtx, p4khz,
+eqpttx, traftx, stattx, feetx, freqrx, polrx, pwrrx, eqptrx, trafrx, statrx,
+i20, it01, ip01, feerx, notc, srvctx, srvcrx, mdate, mtime
 ```
 
-**Archive errors**:
-- `band` doesn't exist
-- `eirp` doesn't exist
-- Missing 13 columns
+### FE_CLOC (3 columns)
+```
+newlocation CHAR(10), oldlocation CHAR(10), name CHAR(16)
+```
 
-### FE_CLOC (Location Change)
-| Archive Definition | Actual Structure |
-|-------------------|------------------|
-| oldlocation CHAR(10) | oldlocation CHAR(10) |
-| newlocation CHAR(10) | newlocation CHAR(10) |
-| chngdate CHAR(10) | - |
-| cmd CHAR(1) | - |
-| - | name CHAR(16) |
-
-**Status**: 50% match
-
-### FE_CCAL (Call Sign Change)
-| Archive Definition | Actual Structure |
-|-------------------|------------------|
-| location CHAR(10) | - |
-| oldcall1 CHAR(9) | - |
-| newcall1 CHAR(9) | - |
-| chngdate CHAR(10) | - |
-| cmd CHAR(1) | - |
-| - | newcallsign CHAR(9) |
-| - | oldcallsign CHAR(9) |
-
-**Status**: 0% match - completely different column names
+### FE_CCAL (2 columns)
+```
+newcallsign CHAR(9), oldcallsign CHAR(9)
+```
 
 ---
 
@@ -160,17 +211,16 @@ srvctx, srvcrx, mdate, mtime
 1. ✅ **FT archive tables rewritten** based on actual schemas (verified)
 2. ✅ **All FT columns captured** for complete data preservation
 3. ✅ **Created validation tool** (`test-ft-archive-columns.js`) to verify definitions
-4. ✅ **Deployed to micsprod** (Feb 2026):
-   - Schema `tsip_archive` created with 18 archive tables
-   - DDL trigger `trg_ArchiveTT_OnDropTable` installed and enabled
-   - Test tables created with corrected FT structures
-5. ✅ **Created SQL execution tool** (`execute-sql-script.js`) for deployment
+4. ✅ **Created SQL execution tool** (`execute-sql-script.js`) for deployment
+5. ✅ **TT archive tables rewritten** - all 4 TT tables corrected (PARM: 27, SITE: 31, ANTE: 47, CHAN: 60 cols)
+6. ✅ **Trigger INSERT statements updated** for TT tables
+7. ✅ **FE archive tables rewritten** - all 8 FE tables corrected (TITL: 6, SHRL: 3, SITE: 18, AZIM: 11, ANTE: 35, CHAN: 29, CLOC: 3, CCAL: 2)
+8. ✅ **Trigger INSERT statements updated** for FE tables
+9. ✅ **Test tables updated** with correct TT/FT/FE structures
 
 ### Remaining
-1. ⬜ **FE archive tables need same treatment** - verify against actual FE tables
-2. ⬜ **Create FE validation test** similar to FT test
-3. ⬜ **Update trigger INSERT statements** for FE tables after verification
-4. ⬜ **Test the trigger** by dropping `tt_test_run01_parm` and verifying archive data
+1. ⬜ **Redeploy to micsprod** - all TT/FT/FE archive tables and trigger
+2. ⬜ **Test the trigger** by dropping `tt_test_run01_parm` and verifying archive data
 
 ---
 

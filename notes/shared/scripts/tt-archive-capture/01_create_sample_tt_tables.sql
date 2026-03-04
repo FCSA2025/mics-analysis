@@ -58,66 +58,218 @@ IF OBJECT_ID(N'dbo.fe_envproj_ccal', N'U') IS NOT NULL
     DROP TABLE dbo.fe_envproj_ccal;
 GO
 
--- Minimal TT_PARM-like table (proname = TS file, envname = ES file per production TT_PARM)
+-- TT_PARM table (27 columns - verified from micsprod)
 CREATE TABLE dbo.tt_test_run01_parm (
-    proname   CHAR(16) NULL,   -- TS (Terrestrial Station) file/PDF name
-    envname   CHAR(16) NULL,   -- ES (Earth Station) file/PDF name
-    runname   CHAR(5) NULL,
-    numcases  INT NULL
+    protype      CHAR(1) NULL,
+    envtype      CHAR(8) NULL,
+    proname      CHAR(16) NULL,      -- TS (Terrestrial Station) file/PDF name
+    envname      CHAR(16) NULL,      -- ES (Earth Station) file/PDF name
+    tsorbout     CHAR(1) NULL,
+    spherecalc   CHAR(1) NULL,
+    fsep         FLOAT NULL,
+    coordist     FLOAT NULL,
+    analopt      CHAR(4) NULL,
+    margin       FLOAT NULL,
+    numchan      SMALLINT NULL,
+    chancodes    CHAR(19) NULL,
+    tempant      CHAR(15) NULL,
+    tempctx      CHAR(15) NULL,
+    tempplan     CHAR(15) NULL,
+    tempequip    CHAR(15) NULL,
+    country      CHAR(3) NULL,
+    selsites     CHAR(15) NULL,
+    numcodes     SMALLINT NULL,
+    codes        CHAR(164) NULL,
+    runname      CHAR(5) NULL,
+    reports      INT NULL,
+    numcases     INT NULL,
+    numtecases   INT NULL,
+    parmparm     CHAR(50) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL
 );
 GO
 
--- Minimal TT_SITE-like table
+-- TT_SITE table (31 columns - verified from micsprod)
 CREATE TABLE dbo.tt_test_run01_site (
-    intcall1  CHAR(9) NULL,
-    viccall1  CHAR(9) NULL,
-    caseno    INT NULL
+    interferer   CHAR(1) NULL,
+    intcall1     CHAR(9) NULL,
+    intcall2     CHAR(9) NULL,
+    viccall1     CHAR(9) NULL,
+    viccall2     CHAR(9) NULL,
+    caseno       INT NULL,
+    subcases     INT NULL,
+    intname1     CHAR(32) NULL,
+    intname2     CHAR(32) NULL,
+    vicname1     CHAR(32) NULL,
+    vicname2     CHAR(32) NULL,
+    intoper      CHAR(6) NULL,
+    intoper2     CHAR(6) NULL,
+    vicoper      CHAR(6) NULL,
+    vicoper2     CHAR(6) NULL,
+    intlatit     INT NULL,
+    intlongit    INT NULL,
+    intgrnd      FLOAT NULL,
+    viclatit     INT NULL,
+    viclongit    INT NULL,
+    vicgrnd      FLOAT NULL,
+    report       SMALLINT NULL,
+    int1int2dist FLOAT NULL,
+    vic1vic2dist FLOAT NULL,
+    int1vic1dist FLOAT NULL,
+    distadv      FLOAT NULL,
+    intoffax     FLOAT NULL,
+    vicoffax     FLOAT NULL,
+    intvicaz     FLOAT NULL,
+    vicintaz     FLOAT NULL,
+    processed    INT NULL
 );
 GO
 
--- Minimal TT_ANTE-like table (subset of columns for testing)
+-- TT_ANTE table (47 columns - verified from micsprod)
 CREATE TABLE dbo.tt_test_run01_ante (
-    intcall1  CHAR(9) NULL,
-    viccall1  CHAR(9) NULL,
-    caseno    INT NULL,
-    intacode  CHAR(12) NULL,
-    vicacode  CHAR(12) NULL
+    interferer   CHAR(1) NULL,
+    intcall1     CHAR(9) NULL,
+    intcall2     CHAR(9) NULL,
+    intbndcde    CHAR(4) NULL,
+    intanum      SMALLINT NULL,
+    viccall1     CHAR(9) NULL,
+    viccall2     CHAR(9) NULL,
+    vicbndcde    CHAR(4) NULL,
+    caseno       INT NULL,
+    vicanum      SMALLINT NULL,
+    intacode     CHAR(12) NULL,
+    vicacode     CHAR(12) NULL,
+    report       SMALLINT NULL,
+    subcaseno    INT NULL,
+    adiscctxh    FLOAT NULL,
+    adiscctxv    FLOAT NULL,
+    adisccrxh    FLOAT NULL,
+    adisccrxv    FLOAT NULL,
+    adiscxtxh    FLOAT NULL,
+    adiscxtxv    FLOAT NULL,
+    adiscxrxh    FLOAT NULL,
+    adiscxrxv    FLOAT NULL,
+    processed    INT NULL,
+    intause      CHAR(4) NULL,
+    vicause      CHAR(4) NULL,
+    intoffaxa    FLOAT NULL,
+    vicoffaxa    FLOAT NULL,
+    intgain      FLOAT NULL,
+    vicgain      FLOAT NULL,
+    intaxref     CHAR(12) NULL,
+    intamodel    CHAR(16) NULL,
+    vicaxref     CHAR(12) NULL,
+    vicamodel    CHAR(16) NULL,
+    intaoffax    CHAR(1) NULL,
+    inthopaz     FLOAT NULL,
+    intantaz     FLOAT NULL,
+    intoffantax  FLOAT NULL,
+    vicaoffax    CHAR(1) NULL,
+    vichopaz     FLOAT NULL,
+    vicantaz     FLOAT NULL,
+    vicoffantax  FLOAT NULL,
+    intaht       FLOAT NULL,
+    vicaht       FLOAT NULL,
+    intvicel     FLOAT NULL,
+    vicintel     FLOAT NULL,
+    intelev      FLOAT NULL,
+    vicelev      FLOAT NULL
 );
 GO
 
--- Minimal TT_CHAN-like table (subset of columns for testing)
+-- TT_CHAN table (60 columns - verified from micsprod)
 CREATE TABLE dbo.tt_test_run01_chan (
-    intcall1  CHAR(9) NULL,
-    viccall1  CHAR(9) NULL,
-    caseno    INT NULL,
-    resti     FLOAT NULL,
-    freqsep   FLOAT NULL
+    interferer   CHAR(1) NULL,
+    intcall1     CHAR(9) NULL,
+    intcall2     CHAR(9) NULL,
+    intbndcde    CHAR(4) NULL,
+    intanum      SMALLINT NULL,
+    intchid      CHAR(4) NULL,
+    viccall1     CHAR(9) NULL,
+    viccall2     CHAR(9) NULL,
+    vicbndcde    CHAR(4) NULL,
+    vicanum      SMALLINT NULL,
+    caseno       INT NULL,
+    vicchid      CHAR(4) NULL,
+    intpolar     CHAR(1) NULL,
+    vicpolar     CHAR(1) NULL,
+    intstattx    CHAR(1) NULL,
+    vicstatrx    CHAR(1) NULL,
+    inttraftx    CHAR(6) NULL,
+    victrafrx    CHAR(6) NULL,
+    inteqpttx    CHAR(8) NULL,
+    viceqptrx    CHAR(8) NULL,
+    intfreqtx    FLOAT NULL,
+    vicfreqrx    FLOAT NULL,
+    vicpwrrx     FLOAT NULL,
+    intpwrtx     FLOAT NULL,
+    intafsltx    FLOAT NULL,
+    vicafslrx    FLOAT NULL,
+    rxant        SMALLINT NULL,
+    txant        SMALLINT NULL,
+    ctxinttraftx CHAR(6) NULL,
+    ctxvictrafrx CHAR(6) NULL,
+    ctxeqpt      CHAR(8) NULL,
+    calctype     CHAR(3) NULL,
+    report       SMALLINT NULL,
+    totantdisc   FLOAT NULL,
+    freqsep      FLOAT NULL,
+    reqdcalc     FLOAT NULL,
+    patloss      FLOAT NULL,
+    calcico      FLOAT NULL,
+    calcixp      FLOAT NULL,
+    resti        FLOAT NULL,
+    eirpadv      FLOAT NULL,
+    tiltdisc     FLOAT NULL,
+    pathloss80   FLOAT NULL,
+    calcico80    FLOAT NULL,
+    calcixp80    FLOAT NULL,
+    reqd80       FLOAT NULL,
+    resti80      FLOAT NULL,
+    pathloss99   FLOAT NULL,
+    calcico99    FLOAT NULL,
+    calcixp99    FLOAT NULL,
+    reqd99       FLOAT NULL,
+    resti99      FLOAT NULL,
+    ohresult     SMALLINT NULL,
+    rqco         FLOAT NULL,
+    processed    INT NULL,
+    ctxinteqpt   CHAR(8) NULL,
+    inteqtype    CHAR(1) NULL,
+    viceqtype    CHAR(1) NULL,
+    intbwchans   FLOAT NULL,
+    vicbwchans   FLOAT NULL
 );
 GO
 
-INSERT INTO dbo.tt_test_run01_parm (proname, envname, runname, numcases)
-VALUES ('testproj', 'envproj', 'run01', 42);
+-- Insert test data for TT_PARM
+INSERT INTO dbo.tt_test_run01_parm (protype, envtype, proname, envname, runname, numcases, mdate, mtime)
+VALUES ('T', 'STANDARD', 'testproj', 'envproj', 'run01', 42, '2025-06-01', '14:30:00');
 GO
 
-INSERT INTO dbo.tt_test_run01_site (intcall1, viccall1, caseno)
+-- Insert test data for TT_SITE
+INSERT INTO dbo.tt_test_run01_site (interferer, intcall1, intcall2, viccall1, viccall2, caseno, subcases, intname1, vicname1, report, processed)
 VALUES
-    ('CALL001', 'VIC001', 1),
-    ('CALL002', 'VIC002', 2),
-    ('CALL003', 'VIC003', 3);
+    ('I', 'CALL001  ', 'REM001   ', 'VIC001   ', 'VREM001  ', 1, 2, 'Interferer Site 1', 'Victim Site 1', 1, 0),
+    ('I', 'CALL002  ', 'REM002   ', 'VIC002   ', 'VREM002  ', 2, 1, 'Interferer Site 2', 'Victim Site 2', 1, 0),
+    ('I', 'CALL003  ', 'REM003   ', 'VIC003   ', 'VREM003  ', 3, 1, 'Interferer Site 3', 'Victim Site 3', 1, 0);
 GO
 
-INSERT INTO dbo.tt_test_run01_ante (intcall1, viccall1, caseno, intacode, vicacode)
+-- Insert test data for TT_ANTE
+INSERT INTO dbo.tt_test_run01_ante (interferer, intcall1, intcall2, viccall1, viccall2, caseno, intacode, vicacode, report, processed)
 VALUES
-    ('CALL001', 'VIC001', 1, 'ANT001', 'VANT001'),
-    ('CALL002', 'VIC002', 2, 'ANT002', 'VANT002'),
-    ('CALL003', 'VIC003', 3, 'ANT003', 'VANT003');
+    ('I', 'CALL001  ', 'REM001   ', 'VIC001   ', 'VREM001  ', 1, 'ANT001      ', 'VANT001     ', 1, 0),
+    ('I', 'CALL002  ', 'REM002   ', 'VIC002   ', 'VREM002  ', 2, 'ANT002      ', 'VANT002     ', 1, 0),
+    ('I', 'CALL003  ', 'REM003   ', 'VIC003   ', 'VREM003  ', 3, 'ANT003      ', 'VANT003     ', 1, 0);
 GO
 
-INSERT INTO dbo.tt_test_run01_chan (intcall1, viccall1, caseno, resti, freqsep)
+-- Insert test data for TT_CHAN
+INSERT INTO dbo.tt_test_run01_chan (interferer, intcall1, intcall2, viccall1, viccall2, caseno, intfreqtx, vicfreqrx, resti, freqsep, report, processed)
 VALUES
-    ('CALL001', 'VIC001', 1, 12.5, 0.1),
-    ('CALL002', 'VIC002', 2, -2.0, 0.2),
-    ('CALL003', 'VIC003', 3, 8.0, 0.15);
+    ('I', 'CALL001  ', 'REM001   ', 'VIC001   ', 'VREM001  ', 1, 6175.24, 6004.50, 12.5, 0.1, 1, 0),
+    ('I', 'CALL002  ', 'REM002   ', 'VIC002   ', 'VREM002  ', 2, 11245.00, 10945.00, -2.0, 0.2, 1, 0),
+    ('I', 'CALL003  ', 'REM003   ', 'VIC003   ', 'VREM003  ', 3, 7500.00, 7200.00, 8.0, 0.15, 1, 0);
 GO
 
 -- =============================================================================
@@ -330,152 +482,198 @@ GO
 -- FE (Earth Station) SOURCE TABLES - envname = 'envproj'
 -- These represent the ES PDF data used as input to the TSIP run
 -- Full set: TITL, SHRL, SITE, AZIM, ANTE, CHAN, CLOC, CCAL
+-- UPDATED: Column structures verified against micsprod (Feb 2026)
 -- =============================================================================
 
--- FE_TITL - Title/metadata
+-- FE_TITL - Title/metadata (6 columns - same as FT_TITL)
 CREATE TABLE dbo.fe_envproj_titl (
-    title        CHAR(80) NULL,
-    cdate        CHAR(10) NULL,
+    validated    CHAR(1) NULL,
+    namef        CHAR(16) NULL,
+    source       CHAR(6) NULL,
+    descr        CHAR(40) NULL,
     mdate        CHAR(10) NULL,
-    mtime        CHAR(8) NULL,
-    cmd          CHAR(1) NULL
+    mtime        CHAR(8) NULL
 );
 GO
 
-INSERT INTO dbo.fe_envproj_titl (title, cdate, mdate, mtime, cmd)
+INSERT INTO dbo.fe_envproj_titl (validated, namef, source, descr, mdate, mtime)
 VALUES 
-    ('Environment Project ES File - Satellite Earth Stations                     ', '2025-02-01', '2025-05-15', '09:45:00', 'A');
+    ('Y', 'envproj         ', 'ISED  ', 'Environment Project - Earth Stations    ', '2025-05-15', '09:45:00');
 GO
 
--- FE_SHRL - Shared link approvals
+-- FE_SHRL - Shared link approvals (3 columns - same as FT_SHRL)
 CREATE TABLE dbo.fe_envproj_shrl (
-    location     CHAR(10) NULL,
-    call1        CHAR(9) NULL,
-    shession     CHAR(10) NULL,
-    approval     CHAR(1) NULL,
-    cmd          CHAR(1) NULL
+    userid       CHAR(8) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL
 );
 GO
 
-INSERT INTO dbo.fe_envproj_shrl (location, call1, shession, approval, cmd)
+INSERT INTO dbo.fe_envproj_shrl (userid, mdate, mtime)
 VALUES 
-    ('ES-DEN-001', 'E12345678', 'SH-2025-ES', 'Y', 'A');
+    ('TESTUSER', '2025-05-15', '09:45:00');
 GO
 
--- FE_SITE - Site information
+-- FE_SITE - Site information (18 columns)
 CREATE TABLE dbo.fe_envproj_site (
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
     location     CHAR(10) NULL,
     name         CHAR(16) NULL,
+    prov         CHAR(2) NULL,
     oper         CHAR(6) NULL,
     latit        INT NULL,
     longit       INT NULL,
-    grnd         FLOAT NULL,
-    rainzone     SMALLINT NULL,
-    radiozone    CHAR(2) NULL,
-    cmd          CHAR(1) NULL
+    grnd         REAL NULL,
+    radio        CHAR(2) NULL,
+    rain         SMALLINT NULL,
+    sdate        CHAR(10) NULL,
+    stats        CHAR(1) NULL,
+    nots         CHAR(4) NULL,
+    oprtyp       CHAR(2) NULL,
+    reg          CHAR(2) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL
 );
 GO
 
-INSERT INTO dbo.fe_envproj_site (location, name, oper, latit, longit, grnd, rainzone, radiozone, cmd)
+INSERT INTO dbo.fe_envproj_site (cmd, recstat, location, name, prov, oper, latit, longit, grnd, radio, rain, stats, mdate, mtime)
 VALUES 
-    ('ES-DEN-001', 'Denver ES Hub   ', 'SATOP1', 394500000, -1048500000, 1620.0, 3, 'K ', 'A'),
-    ('ES-LAX-001', 'Los Angeles ES  ', 'SATOP2', 340000000, -1183000000, 71.0, 2, 'E ', 'A');
+    ('A', 'A', 'ES-DEN-001', 'Denver ES Hub   ', 'CO', 'SATOP1', 394500000, -1048500000, 1620.0, 'K ', 3, 'O', '2025-05-15', '09:45:00'),
+    ('A', 'A', 'ES-LAX-001', 'Los Angeles ES  ', 'CA', 'SATOP2', 340000000, -1183000000, 71.0, 'E ', 2, 'O', '2025-05-15', '09:45:00');
 GO
 
--- FE_AZIM - Azimuth records
+-- FE_AZIM - Azimuth records (11 columns)
 CREATE TABLE dbo.fe_envproj_azim (
-    location     CHAR(10) NULL,
-    az1          FLOAT NULL,
-    az2          FLOAT NULL,
-    el1          FLOAT NULL,
-    el2          FLOAT NULL,
-    cmd          CHAR(1) NULL
-);
-GO
-
-INSERT INTO dbo.fe_envproj_azim (location, az1, az2, el1, el2, cmd)
-VALUES 
-    ('ES-DEN-001', 200.0, 220.0, 30.0, 40.0, 'A'),
-    ('ES-LAX-001', 170.0, 190.0, 38.0, 46.0, 'A');
-GO
-
--- FE_ANTE - Antenna information
-CREATE TABLE dbo.fe_envproj_ante (
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
+    deleteall    CHAR(1) NULL,
     location     CHAR(10) NULL,
     call1        CHAR(9) NULL,
-    band         CHAR(4) NULL,
+    azim         REAL NULL,
+    elev         REAL NULL,
+    dist         REAL NULL,
+    loss         REAL NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL
+);
+GO
+
+INSERT INTO dbo.fe_envproj_azim (cmd, recstat, location, call1, azim, elev, dist, loss, mdate, mtime)
+VALUES 
+    ('A', 'A', 'ES-DEN-001', 'E12345678', 210.5, 35.2, 36000.0, 200.5, '2025-05-15', '09:45:00'),
+    ('A', 'A', 'ES-LAX-001', 'E23456789', 180.0, 42.1, 35800.0, 199.8, '2025-05-15', '09:45:00');
+GO
+
+-- FE_ANTE - Antenna information (35 columns)
+CREATE TABLE dbo.fe_envproj_ante (
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
+    location     CHAR(10) NULL,
+    call1        CHAR(9) NULL,
+    txband       CHAR(4) NULL,
+    rxband       CHAR(4) NULL,
     acodetx      CHAR(12) NULL,
     acoderx      CHAR(12) NULL,
-    aht          FLOAT NULL,
-    az           FLOAT NULL,
-    el           FLOAT NULL,
-    g_t          FLOAT NULL,
-    satname      CHAR(16) NULL,
-    satoper      CHAR(3) NULL,
+    g_t          REAL NULL,
+    lnat         REAL NULL,
+    aht          REAL NULL,
+    afslt        REAL NULL,
+    afslr        REAL NULL,
+    txhgmax      REAL NULL,
+    rxhgmax      REAL NULL,
     satlongit    INT NULL,
-    cmd          CHAR(1) NULL
+    satlong      REAL NULL,
+    satlongs     CHAR(1) NULL,
+    az           REAL NULL,
+    el           REAL NULL,
+    sarc1        REAL NULL,
+    sarc2        REAL NULL,
+    rxpre        REAL NULL,
+    txpre        REAL NULL,
+    rxtro        REAL NULL,
+    txtro        REAL NULL,
+    licence      CHAR(13) NULL,
+    satname      CHAR(16) NULL,
+    stata        CHAR(1) NULL,
+    nota         CHAR(4) NULL,
+    op2          CHAR(2) NULL,
+    antref       INT NULL,
+    orbit        CHAR(2) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL
 );
 GO
 
-INSERT INTO dbo.fe_envproj_ante (location, call1, band, acodetx, acoderx, aht, az, el, g_t, satname, satoper, satlongit, cmd)
+INSERT INTO dbo.fe_envproj_ante (cmd, recstat, location, call1, txband, rxband, acodetx, acoderx, g_t, aht, az, el, satlongit, satname, mdate, mtime)
 VALUES 
-    ('ES-DEN-001', 'E12345678', 'C   ', 'ES-ANT-4.5M ', 'ES-ANT-4.5M ', 5.0, 210.5, 35.2, 28.5, 'GALAXY-19       ', 'INL', -970000000, 'A'),
-    ('ES-LAX-001', 'E23456789', 'KU  ', 'ES-ANT-3.0M ', 'ES-ANT-3.0M ', 3.0, 180.0, 42.1, 32.0, 'SES-3           ', 'SES', -1030000000, 'A');
+    ('A', 'A', 'ES-DEN-001', 'E12345678', 'C   ', 'C   ', 'ES-ANT-4.5M ', 'ES-ANT-4.5M ', 28.5, 5.0, 210.5, 35.2, -970000000, 'GALAXY-19       ', '2025-05-15', '09:45:00'),
+    ('A', 'A', 'ES-LAX-001', 'E23456789', 'KU  ', 'KU  ', 'ES-ANT-3.0M ', 'ES-ANT-3.0M ', 32.0, 3.0, 180.0, 42.1, -1030000000, 'SES-3           ', '2025-05-15', '09:45:00');
 GO
 
+-- FE_CHAN - Channel (29 columns)
 CREATE TABLE dbo.fe_envproj_chan (
+    cmd          CHAR(1) NULL,
+    recstat      CHAR(1) NULL,
     location     CHAR(10) NULL,
     call1        CHAR(9) NULL,
-    band         CHAR(4) NULL,
     chid         CHAR(4) NULL,
     freqtx       FLOAT NULL,
-    freqrx       FLOAT NULL,
-    pwrtx        FLOAT NULL,
-    pwrrx        FLOAT NULL,
-    eirp         FLOAT NULL,
-    traftx       CHAR(6) NULL,
-    trafrx       CHAR(6) NULL,
+    poltx        CHAR(1) NULL,
+    maxtxpower   REAL NULL,
+    pwrtx        REAL NULL,
+    p4khz        REAL NULL,
     eqpttx       CHAR(8) NULL,
-    eqptrx       CHAR(8) NULL,
+    traftx       CHAR(6) NULL,
     stattx       CHAR(1) NULL,
+    feetx        CHAR(2) NULL,
+    freqrx       FLOAT NULL,
+    polrx        CHAR(1) NULL,
+    pwrrx        REAL NULL,
+    eqptrx       CHAR(8) NULL,
+    trafrx       CHAR(6) NULL,
     statrx       CHAR(1) NULL,
-    cmd          CHAR(1) NULL
+    i20          REAL NULL,
+    it01         REAL NULL,
+    ip01         REAL NULL,
+    feerx        CHAR(2) NULL,
+    notc         CHAR(4) NULL,
+    srvctx       CHAR(6) NULL,
+    srvcrx       CHAR(6) NULL,
+    mdate        CHAR(10) NULL,
+    mtime        CHAR(8) NULL
 );
 GO
 
-INSERT INTO dbo.fe_envproj_chan (location, call1, band, chid, freqtx, freqrx, pwrtx, eirp, traftx, trafrx, eqpttx, eqptrx, cmd)
+INSERT INTO dbo.fe_envproj_chan (cmd, recstat, location, call1, chid, freqtx, freqrx, pwrtx, eqpttx, traftx, eqptrx, trafrx, stattx, statrx, mdate, mtime)
 VALUES 
-    ('ES-DEN-001', 'E12345678', 'C   ', '01  ', 6125.00, 3900.00, 15.0, 52.0, 'SCPC  ', 'SCPC  ', 'EQSAT-01', 'EQSAT-01', 'A'),
-    ('ES-LAX-001', 'E23456789', 'KU  ', '01  ', 14250.00, 11950.00, 10.0, 48.0, 'VSAT  ', 'VSAT  ', 'EQSAT-02', 'EQSAT-02', 'A');
+    ('A', 'A', 'ES-DEN-001', 'E12345678', '01  ', 6125.00, 3900.00, 15.0, 'EQSAT-01', 'SCPC  ', 'EQSAT-01', 'SCPC  ', 'O', 'O', '2025-05-15', '09:45:00'),
+    ('A', 'A', 'ES-LAX-001', 'E23456789', '01  ', 14250.00, 11950.00, 10.0, 'EQSAT-02', 'VSAT  ', 'EQSAT-02', 'VSAT  ', 'O', 'O', '2025-05-15', '09:45:00');
 GO
 
--- FE_CLOC - Location change history
+-- FE_CLOC - Location change history (3 columns)
 CREATE TABLE dbo.fe_envproj_cloc (
-    oldlocation  CHAR(10) NULL,
     newlocation  CHAR(10) NULL,
-    chngdate     CHAR(10) NULL,
-    cmd          CHAR(1) NULL
+    oldlocation  CHAR(10) NULL,
+    name         CHAR(16) NULL
 );
 GO
 
-INSERT INTO dbo.fe_envproj_cloc (oldlocation, newlocation, chngdate, cmd)
+INSERT INTO dbo.fe_envproj_cloc (newlocation, oldlocation, name)
 VALUES 
-    ('ES-OLD-001', 'ES-DEN-001', '2024-06-15', 'A');
+    ('ES-DEN-001', 'ES-OLD-001', 'Denver ES Hub   ');
 GO
 
--- FE_CCAL - Call sign change history
+-- FE_CCAL - Call sign change history (2 columns)
 CREATE TABLE dbo.fe_envproj_ccal (
-    location     CHAR(10) NULL,
-    oldcall1     CHAR(9) NULL,
-    newcall1     CHAR(9) NULL,
-    chngdate     CHAR(10) NULL,
-    cmd          CHAR(1) NULL
+    newcallsign  CHAR(9) NULL,
+    oldcallsign  CHAR(9) NULL
 );
 GO
 
-INSERT INTO dbo.fe_envproj_ccal (location, oldcall1, newcall1, chngdate, cmd)
+INSERT INTO dbo.fe_envproj_ccal (newcallsign, oldcallsign)
 VALUES 
-    ('ES-DEN-001', 'E00000001', 'E12345678', '2024-08-01', 'A');
+    ('E12345678', 'E00000001');
 GO
 
 -- =============================================================================

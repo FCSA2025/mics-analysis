@@ -71,10 +71,17 @@ BEGIN
     -- Copy data into archive based on table type
     IF @ObjectName LIKE '%_parm'
     BEGIN
-        -- Archive the TT_PARM data
+        -- Archive the TT_PARM data (27 columns verified from micsprod)
         SET @Sql = N'
-            INSERT INTO tsip_archive.ArchiveTT_PARM (RunKey, proname, envname, runname, numcases, ArchivedAt)
-            SELECT @RunKey, proname, envname, runname, numcases, GETUTCDATE()
+            INSERT INTO tsip_archive.ArchiveTT_PARM 
+                (RunKey, protype, envtype, proname, envname, tsorbout, spherecalc, fsep, coordist,
+                 analopt, margin, numchan, chancodes, tempant, tempctx, tempplan, tempequip,
+                 country, selsites, numcodes, codes, runname, reports, numcases, numtecases,
+                 parmparm, mdate, mtime, ArchivedAt)
+            SELECT @RunKey, protype, envtype, proname, envname, tsorbout, spherecalc, fsep, coordist,
+                   analopt, margin, numchan, chancodes, tempant, tempctx, tempplan, tempequip,
+                   country, selsites, numcodes, codes, runname, reports, numcases, numtecases,
+                   parmparm, mdate, mtime, GETUTCDATE()
             FROM ' + @QualifiedName;
         EXEC sp_executesql @Sql, N'@RunKey NVARCHAR(128)', @RunKey = @RunKey;
 
@@ -252,104 +259,116 @@ BEGIN
             SET @FeClocTable = QUOTENAME(@SchemaName) + N'.fe_' + @envname + N'_cloc';
             SET @FeCcalTable = QUOTENAME(@SchemaName) + N'.fe_' + @envname + N'_ccal';
 
-            -- Archive FE_TITL if it exists
+            -- Archive FE_TITL if it exists (6 columns - same as FT_TITL)
             IF OBJECT_ID(@FeTitlTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFE_TITL 
-                        (RunKey, PdfName, title, cdate, mdate, mtime, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, title, cdate, mdate, mtime, cmd, GETUTCDATE()
+                        (RunKey, PdfName, validated, namef, source, descr, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, validated, namef, source, descr, mdate, mtime, GETUTCDATE()
                     FROM ' + @FeTitlTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
                     @RunKey = @RunKey, @PdfName = @envname;
             END
 
-            -- Archive FE_SHRL if it exists
+            -- Archive FE_SHRL if it exists (3 columns - same as FT_SHRL)
             IF OBJECT_ID(@FeShrlTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFE_SHRL 
-                        (RunKey, PdfName, location, call1, shession, approval, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, location, call1, shession, approval, cmd, GETUTCDATE()
+                        (RunKey, PdfName, userid, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, userid, mdate, mtime, GETUTCDATE()
                     FROM ' + @FeShrlTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
                     @RunKey = @RunKey, @PdfName = @envname;
             END
 
-            -- Archive FE_SITE if it exists
+            -- Archive FE_SITE if it exists (18 columns)
             IF OBJECT_ID(@FeSiteTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFE_SITE 
-                        (RunKey, PdfName, location, name, oper, latit, longit, grnd, rainzone, radiozone, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, location, name, oper, latit, longit, grnd, rainzone, radiozone, cmd, GETUTCDATE()
+                        (RunKey, PdfName, cmd, recstat, location, name, prov, oper, latit, longit, grnd,
+                         radio, rain, sdate, stats, nots, oprtyp, reg, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, cmd, recstat, location, name, prov, oper, latit, longit, grnd,
+                           radio, rain, sdate, stats, nots, oprtyp, reg, mdate, mtime, GETUTCDATE()
                     FROM ' + @FeSiteTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
                     @RunKey = @RunKey, @PdfName = @envname;
             END
 
-            -- Archive FE_AZIM if it exists
+            -- Archive FE_AZIM if it exists (11 columns)
             IF OBJECT_ID(@FeAzimTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFE_AZIM 
-                        (RunKey, PdfName, location, az1, az2, el1, el2, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, location, az1, az2, el1, el2, cmd, GETUTCDATE()
+                        (RunKey, PdfName, cmd, recstat, deleteall, location, call1, azim, elev, dist, loss, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, cmd, recstat, deleteall, location, call1, azim, elev, dist, loss, mdate, mtime, GETUTCDATE()
                     FROM ' + @FeAzimTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
                     @RunKey = @RunKey, @PdfName = @envname;
             END
 
-            -- Archive FE_ANTE if it exists
+            -- Archive FE_ANTE if it exists (35 columns)
             IF OBJECT_ID(@FeAnteTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFE_ANTE 
-                        (RunKey, PdfName, location, call1, band, acodetx, acoderx, aht, az, el, g_t, satname, satoper, satlongit, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, location, call1, band, acodetx, acoderx, aht, az, el, g_t, satname, satoper, satlongit, cmd, GETUTCDATE()
+                        (RunKey, PdfName, cmd, recstat, location, call1, txband, rxband, acodetx, acoderx,
+                         g_t, lnat, aht, afslt, afslr, txhgmax, rxhgmax, satlongit, satlong, satlongs,
+                         az, el, sarc1, sarc2, rxpre, txpre, rxtro, txtro, licence, satname,
+                         stata, nota, op2, antref, orbit, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, cmd, recstat, location, call1, txband, rxband, acodetx, acoderx,
+                           g_t, lnat, aht, afslt, afslr, txhgmax, rxhgmax, satlongit, satlong, satlongs,
+                           az, el, sarc1, sarc2, rxpre, txpre, rxtro, txtro, licence, satname,
+                           stata, nota, op2, antref, orbit, mdate, mtime, GETUTCDATE()
                     FROM ' + @FeAnteTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
                     @RunKey = @RunKey, @PdfName = @envname;
             END
 
-            -- Archive FE_CHAN if it exists
+            -- Archive FE_CHAN if it exists (29 columns)
             IF OBJECT_ID(@FeChanTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFE_CHAN 
-                        (RunKey, PdfName, location, call1, band, chid, freqtx, freqrx, pwrtx, pwrrx, eirp, traftx, trafrx, eqpttx, eqptrx, stattx, statrx, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, location, call1, band, chid, freqtx, freqrx, pwrtx, pwrrx, eirp, traftx, trafrx, eqpttx, eqptrx, stattx, statrx, cmd, GETUTCDATE()
+                        (RunKey, PdfName, cmd, recstat, location, call1, chid, freqtx, poltx, maxtxpower,
+                         pwrtx, p4khz, eqpttx, traftx, stattx, feetx, freqrx, polrx, pwrrx, eqptrx,
+                         trafrx, statrx, i20, it01, ip01, feerx, notc, srvctx, srvcrx, mdate, mtime, ArchivedAt)
+                    SELECT @RunKey, @PdfName, cmd, recstat, location, call1, chid, freqtx, poltx, maxtxpower,
+                           pwrtx, p4khz, eqpttx, traftx, stattx, feetx, freqrx, polrx, pwrrx, eqptrx,
+                           trafrx, statrx, i20, it01, ip01, feerx, notc, srvctx, srvcrx, mdate, mtime, GETUTCDATE()
                     FROM ' + @FeChanTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
                     @RunKey = @RunKey, @PdfName = @envname;
             END
 
-            -- Archive FE_CLOC if it exists
+            -- Archive FE_CLOC if it exists (3 columns)
             IF OBJECT_ID(@FeClocTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFE_CLOC 
-                        (RunKey, PdfName, oldlocation, newlocation, chngdate, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, oldlocation, newlocation, chngdate, cmd, GETUTCDATE()
+                        (RunKey, PdfName, newlocation, oldlocation, name, ArchivedAt)
+                    SELECT @RunKey, @PdfName, newlocation, oldlocation, name, GETUTCDATE()
                     FROM ' + @FeClocTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
                     @RunKey = @RunKey, @PdfName = @envname;
             END
 
-            -- Archive FE_CCAL if it exists
+            -- Archive FE_CCAL if it exists (2 columns)
             IF OBJECT_ID(@FeCcalTable, N'U') IS NOT NULL
             BEGIN
                 SET @Sql = N'
                     INSERT INTO tsip_archive.ArchiveFE_CCAL 
-                        (RunKey, PdfName, location, oldcall1, newcall1, chngdate, cmd, ArchivedAt)
-                    SELECT @RunKey, @PdfName, location, oldcall1, newcall1, chngdate, cmd, GETUTCDATE()
+                        (RunKey, PdfName, newcallsign, oldcallsign, ArchivedAt)
+                    SELECT @RunKey, @PdfName, newcallsign, oldcallsign, GETUTCDATE()
                     FROM ' + @FeCcalTable;
                 EXEC sp_executesql @Sql, 
                     N'@RunKey NVARCHAR(128), @PdfName NVARCHAR(128)', 
@@ -359,25 +378,69 @@ BEGIN
     END
     ELSE IF @ObjectName LIKE '%_site'
     BEGIN
+        -- Archive TT_SITE (31 columns verified from micsprod)
         SET @Sql = N'
-            INSERT INTO tsip_archive.ArchiveTT_SITE (RunKey, intcall1, viccall1, caseno, ArchivedAt)
-            SELECT @RunKey, intcall1, viccall1, caseno, GETUTCDATE()
+            INSERT INTO tsip_archive.ArchiveTT_SITE 
+                (RunKey, interferer, intcall1, intcall2, viccall1, viccall2, caseno, subcases,
+                 intname1, intname2, vicname1, vicname2, intoper, intoper2, vicoper, vicoper2,
+                 intlatit, intlongit, intgrnd, viclatit, viclongit, vicgrnd, report,
+                 int1int2dist, vic1vic2dist, int1vic1dist, distadv, intoffax, vicoffax,
+                 intvicaz, vicintaz, processed, ArchivedAt)
+            SELECT @RunKey, interferer, intcall1, intcall2, viccall1, viccall2, caseno, subcases,
+                   intname1, intname2, vicname1, vicname2, intoper, intoper2, vicoper, vicoper2,
+                   intlatit, intlongit, intgrnd, viclatit, viclongit, vicgrnd, report,
+                   int1int2dist, vic1vic2dist, int1vic1dist, distadv, intoffax, vicoffax,
+                   intvicaz, vicintaz, processed, GETUTCDATE()
             FROM ' + @QualifiedName;
         EXEC sp_executesql @Sql, N'@RunKey NVARCHAR(128)', @RunKey = @RunKey;
     END
     ELSE IF @ObjectName LIKE '%_ante'
     BEGIN
+        -- Archive TT_ANTE (47 columns verified from micsprod)
         SET @Sql = N'
-            INSERT INTO tsip_archive.ArchiveTT_ANTE (RunKey, intcall1, viccall1, caseno, intacode, vicacode, ArchivedAt)
-            SELECT @RunKey, intcall1, viccall1, caseno, intacode, vicacode, GETUTCDATE()
+            INSERT INTO tsip_archive.ArchiveTT_ANTE 
+                (RunKey, interferer, intcall1, intcall2, intbndcde, intanum, viccall1, viccall2,
+                 vicbndcde, caseno, vicanum, intacode, vicacode, report, subcaseno,
+                 adiscctxh, adiscctxv, adisccrxh, adisccrxv, adiscxtxh, adiscxtxv, adiscxrxh, adiscxrxv,
+                 processed, intause, vicause, intoffaxa, vicoffaxa, intgain, vicgain,
+                 intaxref, intamodel, vicaxref, vicamodel, intaoffax, inthopaz, intantaz, intoffantax,
+                 vicaoffax, vichopaz, vicantaz, vicoffantax, intaht, vicaht, intvicel, vicintel,
+                 intelev, vicelev, ArchivedAt)
+            SELECT @RunKey, interferer, intcall1, intcall2, intbndcde, intanum, viccall1, viccall2,
+                   vicbndcde, caseno, vicanum, intacode, vicacode, report, subcaseno,
+                   adiscctxh, adiscctxv, adisccrxh, adisccrxv, adiscxtxh, adiscxtxv, adiscxrxh, adiscxrxv,
+                   processed, intause, vicause, intoffaxa, vicoffaxa, intgain, vicgain,
+                   intaxref, intamodel, vicaxref, vicamodel, intaoffax, inthopaz, intantaz, intoffantax,
+                   vicaoffax, vichopaz, vicantaz, vicoffantax, intaht, vicaht, intvicel, vicintel,
+                   intelev, vicelev, GETUTCDATE()
             FROM ' + @QualifiedName;
         EXEC sp_executesql @Sql, N'@RunKey NVARCHAR(128)', @RunKey = @RunKey;
     END
     ELSE IF @ObjectName LIKE '%_chan'
     BEGIN
+        -- Archive TT_CHAN (60 columns verified from micsprod)
         SET @Sql = N'
-            INSERT INTO tsip_archive.ArchiveTT_CHAN (RunKey, intcall1, viccall1, caseno, resti, freqsep, ArchivedAt)
-            SELECT @RunKey, intcall1, viccall1, caseno, resti, freqsep, GETUTCDATE()
+            INSERT INTO tsip_archive.ArchiveTT_CHAN 
+                (RunKey, interferer, intcall1, intcall2, intbndcde, intanum, intchid,
+                 viccall1, viccall2, vicbndcde, vicanum, caseno, vicchid,
+                 intpolar, vicpolar, intstattx, vicstatrx, inttraftx, victrafrx, inteqpttx, viceqptrx,
+                 intfreqtx, vicfreqrx, vicpwrrx, intpwrtx, intafsltx, vicafslrx, rxant, txant,
+                 ctxinttraftx, ctxvictrafrx, ctxeqpt, calctype, report, totantdisc, freqsep,
+                 reqdcalc, patloss, calcico, calcixp, resti, eirpadv, tiltdisc,
+                 pathloss80, calcico80, calcixp80, reqd80, resti80,
+                 pathloss99, calcico99, calcixp99, reqd99, resti99,
+                 ohresult, rqco, processed, ctxinteqpt, inteqtype, viceqtype, intbwchans, vicbwchans,
+                 ArchivedAt)
+            SELECT @RunKey, interferer, intcall1, intcall2, intbndcde, intanum, intchid,
+                   viccall1, viccall2, vicbndcde, vicanum, caseno, vicchid,
+                   intpolar, vicpolar, intstattx, vicstatrx, inttraftx, victrafrx, inteqpttx, viceqptrx,
+                   intfreqtx, vicfreqrx, vicpwrrx, intpwrtx, intafsltx, vicafslrx, rxant, txant,
+                   ctxinttraftx, ctxvictrafrx, ctxeqpt, calctype, report, totantdisc, freqsep,
+                   reqdcalc, patloss, calcico, calcixp, resti, eirpadv, tiltdisc,
+                   pathloss80, calcico80, calcixp80, reqd80, resti80,
+                   pathloss99, calcico99, calcixp99, reqd99, resti99,
+                   ohresult, rqco, processed, ctxinteqpt, inteqtype, viceqtype, intbwchans, vicbwchans,
+                   GETUTCDATE()
             FROM ' + @QualifiedName;
         EXEC sp_executesql @Sql, N'@RunKey NVARCHAR(128)', @RunKey = @RunKey;
     END
