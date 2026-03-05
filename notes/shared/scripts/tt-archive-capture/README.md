@@ -59,10 +59,12 @@ The external TSIP process drops TT tables when finished, and we can't control th
 | # | Script | Purpose |
 |---|--------|---------|
 | 00 | `00_create_schema_and_archive_tables.sql` | Creates `tsip_archive` schema and all 18 archive tables |
-| 01 | `01_create_sample_tt_tables.sql` | Creates sample TT, FT, FE tables with test data |
+| 01 | `01_create_sample_tt_tables.sql` | Creates sample TT, FT, FE tables with test data (reference) |
 | 02 | `02_create_drop_trigger.sql` | Creates DDL trigger for TT archiving on DROP TABLE |
 | 03 | `03_create_schema_lookup_function.sql` | Creates helper function to map MicsID to schema |
 | 04 | `04_create_queue_insert_trigger.sql` | Creates INSERT trigger on tsip_queue for FT/FE archiving |
+| 05 | `05_test_and_verify.sql` | **Self-contained test** - creates test data and verifies both triggers |
+| 06 | `06_cleanup_triggers.sql` | Removes triggers and function (for uninstall) |
 
 ## Deployment Order
 
@@ -70,8 +72,21 @@ The external TSIP process drops TT tables when finished, and we can't control th
 2. **Helper Function**: Run `03_create_schema_lookup_function.sql`
 3. **TT Trigger**: Run `02_create_drop_trigger.sql`
 4. **FT/FE Trigger**: Run `04_create_queue_insert_trigger.sql`
+5. **Verify**: Run `05_test_and_verify.sql` to test the complete solution
 
 **Note**: Replace `[YourDatabase]` in each script with your actual database name.
+
+## Testing
+
+The test script (`05_test_and_verify.sql`) is self-contained and:
+- Creates test tables in `dbo` schema (TT) and a valid user schema like `bchy` (FT/FE)
+- Tests FT/FE archiving via an INSERT into `web.tsip_queue`
+- Tests TT archiving via DROP TABLE commands
+- Verifies all 18 archive tables are populated correctly
+
+**Status**: Tested successfully on micsprod (2026-02-04)
+
+**Note**: The DDL trigger displays "transaction ended in trigger" messages - this is expected behavior due to the ROLLBACK + re-DROP architecture and does not indicate failure.
 
 ## Data Flow
 
