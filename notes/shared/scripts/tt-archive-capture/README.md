@@ -1,17 +1,34 @@
-# TSIP Archive Capture Scripts (Drop-Trigger Approach)
+# TSIP Archive Capture Scripts
 
-Scripts to capture TSIP run data and source inputs when tables are dropped, using a DDL trigger.
+Scripts to capture TSIP run data and source inputs using two complementary triggers.
+
+## Architecture Overview
+
+| Data Type | Archive Trigger | Trigger Type | Why |
+|-----------|----------------|--------------|-----|
+| **TT** (Results) | `DROP TABLE tt_*` | DDL trigger on DATABASE | TT tables only exist after TSIP run |
+| **FT** (Source) | `INSERT INTO tsip_queue` | DML trigger on table | Source data exists before run |
+| **FE** (Source) | `INSERT INTO tsip_queue` | DML trigger on table | Source data exists before run |
+
+### Why Two Triggers?
+
+The external TSIP process drops TT tables when finished, and we can't control that timing. Attempting to archive FT/FE tables from within a DDL `DROP_TABLE` trigger caused transaction issues due to SQL Server's `ROLLBACK` behavior.
+
+**Solution**: Archive FT/FE source data *before* the TSIP run begins (when the job is queued), and archive TT results *after* the run (when tables are dropped).
 
 ## What Gets Archived
 
-| Type | Tables | When Captured | Purpose |
-|------|--------|---------------|---------|
-| **TT** | `ArchiveTT_PARM`, `_SITE`, `_ANTE`, `_CHAN` | When TT tables dropped | TSIP **results** |
-| **FT** | 6 tables (see below) | When `TT_PARM` dropped | TS **source data** |
-| **FE** | 8 tables (see below) | When `TT_PARM` dropped | ES **source data** |
+### TT (TSIP Results) - 4 Tables
+| Archive Table | Source Table | Purpose |
+|---------------|--------------|---------|
+| `ArchiveTT_PARM` | `tt_{runkey}_parm` | Run parameters |
+| `ArchiveTT_SITE` | `tt_{runkey}_site` | Site analysis results |
+| `ArchiveTT_ANTE` | `tt_{runkey}_ante` | Antenna analysis results |
+| `ArchiveTT_CHAN` | `tt_{runkey}_chan` | Channel analysis results |
 
-### FT (Terrestrial Station) Tables - 6 Total
+**Linked by**: `RunKey` (e.g., "test_run01")
 
+### FT (Terrestrial Station Source) - 6 Tables
 | Archive Table | Source Table | Purpose |
 |---------------|--------------|---------|
 | `ArchiveFT_TITL` | `ft_{proname}_titl` | Title/metadata |
@@ -19,10 +36,11 @@ Scripts to capture TSIP run data and source inputs when tables are dropped, usin
 | `ArchiveFT_SITE` | `ft_{proname}_site` | Site information |
 | `ArchiveFT_ANTE` | `ft_{proname}_ante` | Antenna information |
 | `ArchiveFT_CHAN` | `ft_{proname}_chan` | Channel information |
-| `ArchiveFT_CHNG_CALL` | `ft_{proname}_chng_call` | Call sign change history |
+| `ArchiveFT_CHNG_CALL` | `ft_{proname}_chng_call` | Call sign changes |
 
-### FE (Earth Station) Tables - 8 Total
+**Linked by**: `TQ_Job` (queue job ID)
 
+### FE (Earth Station Source) - 8 Tables
 | Archive Table | Source Table | Purpose |
 |---------------|--------------|---------|
 | `ArchiveFE_TITL` | `fe_{envname}_titl` | Title/metadata |
@@ -31,170 +49,138 @@ Scripts to capture TSIP run data and source inputs when tables are dropped, usin
 | `ArchiveFE_AZIM` | `fe_{envname}_azim` | Azimuth records |
 | `ArchiveFE_ANTE` | `fe_{envname}_ante` | Antenna information |
 | `ArchiveFE_CHAN` | `fe_{envname}_chan` | Channel information |
-| `ArchiveFE_CLOC` | `fe_{envname}_cloc` | Location change history |
-| `ArchiveFE_CCAL` | `fe_{envname}_ccal` | Call sign change history |
+| `ArchiveFE_CLOC` | `fe_{envname}_cloc` | Location changes |
+| `ArchiveFE_CCAL` | `fe_{envname}_ccal` | Call sign changes |
 
-**Key feature**: FT/FE source data is captured at **run completion time** (when TT_PARM is dropped), not when the PDF tables are eventually deleted. This ensures the archive has the exact source data used for each run.
-
-## Prerequisites
-
-- SQL Server (dev database; e.g. MicsMin, RemicsDev)
-- Replace `[YourDatabase]` in each script with your database name
+**Linked by**: `TQ_Job` (queue job ID)
 
 ## Scripts
 
 | # | Script | Purpose |
 |---|--------|---------|
 | 00 | `00_create_schema_and_archive_tables.sql` | Creates `tsip_archive` schema and all 18 archive tables |
-| 01 | `01_create_sample_tt_tables.sql` | Creates sample TT (4), FT (6), and FE (8) tables with test data |
-| 02 | `02_create_drop_trigger.sql` | Creates DDL trigger `trg_ArchiveTT_OnDropTable` |
-| 03 | `03_test_drop_and_verify.sql` | Drops TT tables and verifies all 18 archives |
-| 04 | `04_cleanup_trigger.sql` | (Optional) Drops the trigger |
+| 01 | `01_create_sample_tt_tables.sql` | Creates sample TT, FT, FE tables with test data |
+| 02 | `02_create_drop_trigger.sql` | Creates DDL trigger for TT archiving on DROP TABLE |
+| 03 | `03_create_schema_lookup_function.sql` | Creates helper function to map MicsID to schema |
+| 04 | `04_create_queue_insert_trigger.sql` | Creates INSERT trigger on tsip_queue for FT/FE archiving |
 
-## Running Order
+## Deployment Order
 
-1. Run `00_create_schema_and_archive_tables.sql` - Create all archive tables
-2. Run `01_create_sample_tt_tables.sql` - Create test data
-3. Run `02_create_drop_trigger.sql` - Create the trigger
-4. Run `03_test_drop_and_verify.sql` - Test the archive capture
+1. **Schema & Tables**: Run `00_create_schema_and_archive_tables.sql`
+2. **Helper Function**: Run `03_create_schema_lookup_function.sql`
+3. **TT Trigger**: Run `02_create_drop_trigger.sql`
+4. **FT/FE Trigger**: Run `04_create_queue_insert_trigger.sql`
 
-## Expected Results After Test
+**Note**: Replace `[YourDatabase]` in each script with your actual database name.
 
-**TT (TSIP Results)** - archived when each TT table is dropped:
-- `ArchiveTT_PARM`: 1 row (RunKey `test_run01`, proname=`testproj`, envname=`envproj`)
-- `ArchiveTT_SITE`, `_ANTE`, `_CHAN`: 3 rows each
-
-**FT (TS Source - 6 tables)** - all archived when TT_PARM is dropped:
-- `ArchiveFT_TITL`: 1 row
-- `ArchiveFT_SHRL`: 2 rows
-- `ArchiveFT_SITE`, `_ANTE`, `_CHAN`: 2 rows each
-- `ArchiveFT_CHNG_CALL`: 1 row
-
-**FE (ES Source - 8 tables)** - all archived when TT_PARM is dropped:
-- `ArchiveFE_TITL`: 1 row
-- `ArchiveFE_SHRL`: 1 row
-- `ArchiveFE_SITE`, `_AZIM`, `_ANTE`, `_CHAN`: 2 rows each
-- `ArchiveFE_CLOC`: 1 row
-- `ArchiveFE_CCAL`: 1 row
-
-**Note**: FT/FE source tables still exist after the test - they're snapshotted, not dropped.
-
-## Data Model
-
-All archives are linked by `RunKey`:
+## Data Flow
 
 ```
-                    ┌──────────────────────┐
-                    │   ArchiveTT_PARM     │
-                    │   (Master Record)    │
-                    │   ───────────────    │
-                    │   RunKey (PK)        │
-                    │   proname ─────────────────┐
-                    │   envname ───────────┐     │
-                    └──────────────────────┘     │
-                              │                  │     │
-        ┌─────────────────────┼─────────────────┐     │
-        ▼                     ▼                 ▼     │
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│ArchiveTT_SITE│  │ArchiveTT_ANTE│  │ArchiveTT_CHAN│ │
-│  (Results)   │  │  (Results)   │  │  (Results)   │ │
-│ RunKey (FK)  │  │ RunKey (FK)  │  │ RunKey (FK)  │ │
-└──────────────┘  └──────────────┘  └──────────────┘ │
-                                                     │
-        ┌────────────────────────────────────────────┘
-        │ (proname → FT tables)
-        ▼
-┌──────────────────────────────────────────────────────────────┐
-│ FT (TS Source) - 6 tables                                    │
-│ ArchiveFT_TITL, _SHRL, _SITE, _ANTE, _CHAN, _CHNG_CALL       │
-│ All linked by: RunKey (FK), PdfName = proname                │
-└──────────────────────────────────────────────────────────────┘
-
-        │ (envname → FE tables)
-        ▼
-┌──────────────────────────────────────────────────────────────┐
-│ FE (ES Source) - 8 tables                                    │
-│ ArchiveFE_TITL, _SHRL, _SITE, _AZIM, _ANTE, _CHAN, _CLOC,    │
-│              _CCAL                                           │
-│ All linked by: RunKey (FK), PdfName = envname                │
-└──────────────────────────────────────────────────────────────┘
+                                  ┌─────────────────┐
+                                  │ web.tsip_queue  │
+                                  │ INSERT trigger  │
+                                  └────────┬────────┘
+                                           │
+                         ┌─────────────────┼─────────────────┐
+                         │                 │                 │
+                         ▼                 │                 ▼
+              ┌──────────────────┐         │      ┌──────────────────┐
+              │  FT Archive      │         │      │  FE Archive      │
+              │  (6 tables)      │         │      │  (8 tables)      │
+              │  TQ_Job (FK)     │         │      │  TQ_Job (FK)     │
+              └──────────────────┘         │      └──────────────────┘
+                                           │
+                                           ▼
+                                  ┌────────────────┐
+                                  │  TSIP Runs...  │
+                                  │  Creates TT    │
+                                  │  tables        │
+                                  └────────┬───────┘
+                                           │
+                                           ▼
+                                  ┌────────────────┐
+                                  │  DROP TT       │
+                                  │  tables        │
+                                  │  DDL trigger   │
+                                  └────────┬───────┘
+                                           │
+                                           ▼
+                                  ┌──────────────────┐
+                                  │  TT Archive      │
+                                  │  (4 tables)      │
+                                  │  RunKey (FK)     │
+                                  └──────────────────┘
 ```
+
+## MicsID to Schema Mapping
+
+The `fn_GetSchemaFromMicsID` function handles variable-length MicsIDs:
+
+| MicsID | Derived Schema |
+|--------|----------------|
+| `rctl6` | `rctl` |
+| `rctl13` | `rctl` |
+| `bchy2` | `bchy` |
+| `glw1` | `glw` |
+
+**Algorithm**: Find the longest schema name that is a prefix of the MicsID.
 
 ## Query Examples
 
-### Get complete run data
+### Get FT/FE source data by job ID
+
+```sql
+DECLARE @TQ_Job INT = 12345;
+
+-- FT Source
+SELECT * FROM tsip_archive.ArchiveFT_TITL WHERE TQ_Job = @TQ_Job;
+SELECT * FROM tsip_archive.ArchiveFT_SITE WHERE TQ_Job = @TQ_Job;
+SELECT * FROM tsip_archive.ArchiveFT_CHAN WHERE TQ_Job = @TQ_Job;
+
+-- FE Source
+SELECT * FROM tsip_archive.ArchiveFE_TITL WHERE TQ_Job = @TQ_Job;
+SELECT * FROM tsip_archive.ArchiveFE_SITE WHERE TQ_Job = @TQ_Job;
+SELECT * FROM tsip_archive.ArchiveFE_CHAN WHERE TQ_Job = @TQ_Job;
+```
+
+### Get TT results by RunKey
 
 ```sql
 DECLARE @RunKey NVARCHAR(128) = 'test_run01';
 
--- Run parameters and summary
 SELECT * FROM tsip_archive.ArchiveTT_PARM WHERE RunKey = @RunKey;
-
--- TSIP Results
+SELECT * FROM tsip_archive.ArchiveTT_SITE WHERE RunKey = @RunKey;
 SELECT * FROM tsip_archive.ArchiveTT_CHAN WHERE RunKey = @RunKey;
-
--- TS Source (all 6 tables as they were at run time)
-SELECT * FROM tsip_archive.ArchiveFT_TITL WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFT_SHRL WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFT_SITE WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFT_ANTE WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFT_CHAN WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFT_CHNG_CALL WHERE RunKey = @RunKey;
-
--- ES Source (all 8 tables as they were at run time)
-SELECT * FROM tsip_archive.ArchiveFE_TITL WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFE_SHRL WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFE_SITE WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFE_AZIM WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFE_ANTE WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFE_CHAN WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFE_CLOC WHERE RunKey = @RunKey;
-SELECT * FROM tsip_archive.ArchiveFE_CCAL WHERE RunKey = @RunKey;
 ```
 
-### Run summary with all counts
+### Archive summary by job
 
 ```sql
 SELECT 
-    p.RunKey,
-    p.ArchivedAt,
-    RTRIM(p.proname) AS TS_Pdf,
-    RTRIM(p.envname) AS ES_Pdf,
-    p.numcases,
-    -- TT Results
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveTT_CHAN WHERE RunKey = p.RunKey) AS TT_Channels,
-    -- FT Source (6 tables)
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFT_TITL WHERE RunKey = p.RunKey) AS FT_Titl,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFT_SHRL WHERE RunKey = p.RunKey) AS FT_Shrl,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFT_SITE WHERE RunKey = p.RunKey) AS FT_Sites,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFT_ANTE WHERE RunKey = p.RunKey) AS FT_Ante,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFT_CHAN WHERE RunKey = p.RunKey) AS FT_Chan,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFT_CHNG_CALL WHERE RunKey = p.RunKey) AS FT_ChngCall,
-    -- FE Source (8 tables)
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_TITL WHERE RunKey = p.RunKey) AS FE_Titl,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_SHRL WHERE RunKey = p.RunKey) AS FE_Shrl,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_SITE WHERE RunKey = p.RunKey) AS FE_Sites,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_AZIM WHERE RunKey = p.RunKey) AS FE_Azim,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_ANTE WHERE RunKey = p.RunKey) AS FE_Ante,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_CHAN WHERE RunKey = p.RunKey) AS FE_Chan,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_CLOC WHERE RunKey = p.RunKey) AS FE_Cloc,
-    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_CCAL WHERE RunKey = p.RunKey) AS FE_Ccal
-FROM tsip_archive.ArchiveTT_PARM p;
+    tq.TQ_Job,
+    tq.TQ_ArgFile,
+    tq.TQ_MicsID,
+    -- FT counts
+    (SELECT COUNT(*) FROM tsip_archive.ArchiveFT_SITE WHERE TQ_Job = tq.TQ_Job) AS FT_Sites,
+    (SELECT COUNT(*) FROM tsip_archive.ArchiveFT_CHAN WHERE TQ_Job = tq.TQ_Job) AS FT_Channels,
+    -- FE counts  
+    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_SITE WHERE TQ_Job = tq.TQ_Job) AS FE_Sites,
+    (SELECT COUNT(*) FROM tsip_archive.ArchiveFE_CHAN WHERE TQ_Job = tq.TQ_Job) AS FE_Channels
+FROM web.tsip_queue tq
+WHERE TQ_Status = 'F'  -- Finished jobs
+ORDER BY TQ_Job DESC;
 ```
-
-## RunKey Parsing
-
-The trigger derives `RunKey` from the table name:
-- `tt_test_run01_parm` → RunKey `test_run01`
-- Strips `tt_` prefix and `_parm`/`_site`/`_ante`/`_chan` suffix
-
-Temp tables (`tt_%_tmp1`, `tt_%_tmp2`) are not archived.
 
 ## Table Count Summary
 
-| Category | Tables | Total Columns (approx) |
-|----------|--------|------------------------|
-| TT Results | 4 | ~25 |
-| FT Source | 6 | ~50 |
-| FE Source | 8 | ~60 |
-| **Total** | **18** | ~135 |
+| Category | Tables | Triggered By |
+|----------|--------|--------------|
+| TT Results | 4 | DROP TABLE |
+| FT Source | 6 | INSERT tsip_queue |
+| FE Source | 8 | INSERT tsip_queue |
+| **Total** | **18** | |
+
+## Related Documentation
+
+- [tsip-queue-analysis.md](../../tsip-queue-analysis.md) - Detailed analysis of the tsip_queue table structure
+- [database-tables.md](../../database-tables.md) - Complete database schema documentation

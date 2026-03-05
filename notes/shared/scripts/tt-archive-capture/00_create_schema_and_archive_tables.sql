@@ -252,7 +252,7 @@ GO
 
 -- =============================================================================
 -- FT (Terrestrial Station) Source Archive Tables
--- Captured at run completion (when TT_PARM is dropped), linked by RunKey
+-- Captured when job is queued (INSERT into tsip_queue), linked by TQ_Job
 -- Full set: TITL, SHRL, SITE, ANTE, CHAN, CHNG_CALL
 -- =============================================================================
 
@@ -264,7 +264,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFT_TITL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,                 -- Links to web.tsip_queue.TQ_Job
+    RunKey       NVARCHAR(128) NULL,           -- Optional link to TT archive (set later if available)
     PdfName      NVARCHAR(128) NOT NULL,
     validated    CHAR(1) NULL,                 -- Validation flag
     namef        CHAR(16) NULL,                -- File name
@@ -277,7 +278,7 @@ CREATE TABLE tsip_archive.ArchiveFT_TITL (
 );
 GO
 
-CREATE INDEX IX_ArchiveFT_TITL_RunKey ON tsip_archive.ArchiveFT_TITL (RunKey);
+CREATE INDEX IX_ArchiveFT_TITL_TQ_Job ON tsip_archive.ArchiveFT_TITL (TQ_Job);
 GO
 
 -- Archive table for FT_SHRL (Shared link approvals)
@@ -288,7 +289,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFT_SHRL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     userid       CHAR(8) NULL,                 -- User identifier
     mdate        CHAR(10) NULL,                -- Modification date
@@ -298,7 +300,7 @@ CREATE TABLE tsip_archive.ArchiveFT_SHRL (
 );
 GO
 
-CREATE INDEX IX_ArchiveFT_SHRL_RunKey ON tsip_archive.ArchiveFT_SHRL (RunKey);
+CREATE INDEX IX_ArchiveFT_SHRL_TQ_Job ON tsip_archive.ArchiveFT_SHRL (TQ_Job);
 GO
 
 -- Archive table for FT_SITE
@@ -310,7 +312,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFT_SITE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,       -- Links to ArchiveTT_PARM.RunKey
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,       -- TS PDF name (= proname)
     cmd          CHAR(1) NULL,
     recstat      CHAR(1) NULL,
@@ -346,7 +349,7 @@ CREATE TABLE tsip_archive.ArchiveFT_SITE (
 );
 GO
 
-CREATE INDEX IX_ArchiveFT_SITE_RunKey ON tsip_archive.ArchiveFT_SITE (RunKey);
+CREATE INDEX IX_ArchiveFT_SITE_TQ_Job ON tsip_archive.ArchiveFT_SITE (TQ_Job);
 GO
 
 -- Archive table for FT_ANTE
@@ -357,7 +360,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFT_ANTE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     cmd          CHAR(1) NULL,
     recstat      CHAR(1) NULL,
@@ -401,7 +405,7 @@ CREATE TABLE tsip_archive.ArchiveFT_ANTE (
 );
 GO
 
-CREATE INDEX IX_ArchiveFT_ANTE_RunKey ON tsip_archive.ArchiveFT_ANTE (RunKey);
+CREATE INDEX IX_ArchiveFT_ANTE_TQ_Job ON tsip_archive.ArchiveFT_ANTE (TQ_Job);
 GO
 
 -- Archive table for FT_CHAN
@@ -412,7 +416,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFT_CHAN (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     cmd          CHAR(1) NULL,
     recstat      CHAR(1) NULL,
@@ -471,7 +476,7 @@ CREATE TABLE tsip_archive.ArchiveFT_CHAN (
 );
 GO
 
-CREATE INDEX IX_ArchiveFT_CHAN_RunKey ON tsip_archive.ArchiveFT_CHAN (RunKey);
+CREATE INDEX IX_ArchiveFT_CHAN_TQ_Job ON tsip_archive.ArchiveFT_CHAN (TQ_Job);
 GO
 
 -- Archive table for FT_CHNG_CALL (Call sign change history)
@@ -482,7 +487,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFT_CHNG_CALL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     newcall1     CHAR(9) NULL,                 -- New call sign 1 (PK in source)
     oldcall1     CHAR(9) NULL,                 -- Old call sign 1 (PK in source)
@@ -492,12 +498,12 @@ CREATE TABLE tsip_archive.ArchiveFT_CHNG_CALL (
 );
 GO
 
-CREATE INDEX IX_ArchiveFT_CHNG_CALL_RunKey ON tsip_archive.ArchiveFT_CHNG_CALL (RunKey);
+CREATE INDEX IX_ArchiveFT_CHNG_CALL_TQ_Job ON tsip_archive.ArchiveFT_CHNG_CALL (TQ_Job);
 GO
 
 -- =============================================================================
 -- FE (Earth Station) Source Archive Tables
--- Captured at run completion (when TT_PARM is dropped), linked by RunKey
+-- Captured when job is queued (INSERT into tsip_queue), linked by TQ_Job
 -- Full set: TITL, SHRL, SITE, AZIM, ANTE, CHAN, CLOC, CCAL
 -- =============================================================================
 
@@ -509,7 +515,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFE_TITL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     validated    CHAR(1) NULL,
     namef        CHAR(16) NULL,
@@ -522,7 +529,7 @@ CREATE TABLE tsip_archive.ArchiveFE_TITL (
 );
 GO
 
-CREATE INDEX IX_ArchiveFE_TITL_RunKey ON tsip_archive.ArchiveFE_TITL (RunKey);
+CREATE INDEX IX_ArchiveFE_TITL_TQ_Job ON tsip_archive.ArchiveFE_TITL (TQ_Job);
 GO
 
 -- Archive table for FE_SHRL (Shared link approvals)
@@ -533,7 +540,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFE_SHRL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     userid       CHAR(8) NULL,
     mdate        CHAR(10) NULL,
@@ -543,7 +551,7 @@ CREATE TABLE tsip_archive.ArchiveFE_SHRL (
 );
 GO
 
-CREATE INDEX IX_ArchiveFE_SHRL_RunKey ON tsip_archive.ArchiveFE_SHRL (RunKey);
+CREATE INDEX IX_ArchiveFE_SHRL_TQ_Job ON tsip_archive.ArchiveFE_SHRL (TQ_Job);
 GO
 
 -- Archive table for FE_SITE
@@ -554,7 +562,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFE_SITE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     cmd          CHAR(1) NULL,
     recstat      CHAR(1) NULL,
@@ -579,7 +588,7 @@ CREATE TABLE tsip_archive.ArchiveFE_SITE (
 );
 GO
 
-CREATE INDEX IX_ArchiveFE_SITE_RunKey ON tsip_archive.ArchiveFE_SITE (RunKey);
+CREATE INDEX IX_ArchiveFE_SITE_TQ_Job ON tsip_archive.ArchiveFE_SITE (TQ_Job);
 GO
 
 -- Archive table for FE_AZIM (Azimuth records)
@@ -590,7 +599,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFE_AZIM (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     cmd          CHAR(1) NULL,
     recstat      CHAR(1) NULL,
@@ -608,7 +618,7 @@ CREATE TABLE tsip_archive.ArchiveFE_AZIM (
 );
 GO
 
-CREATE INDEX IX_ArchiveFE_AZIM_RunKey ON tsip_archive.ArchiveFE_AZIM (RunKey);
+CREATE INDEX IX_ArchiveFE_AZIM_TQ_Job ON tsip_archive.ArchiveFE_AZIM (TQ_Job);
 GO
 
 -- Archive table for FE_ANTE
@@ -619,7 +629,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFE_ANTE (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     cmd          CHAR(1) NULL,
     recstat      CHAR(1) NULL,
@@ -661,7 +672,7 @@ CREATE TABLE tsip_archive.ArchiveFE_ANTE (
 );
 GO
 
-CREATE INDEX IX_ArchiveFE_ANTE_RunKey ON tsip_archive.ArchiveFE_ANTE (RunKey);
+CREATE INDEX IX_ArchiveFE_ANTE_TQ_Job ON tsip_archive.ArchiveFE_ANTE (TQ_Job);
 GO
 
 -- Archive table for FE_CHAN
@@ -672,7 +683,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFE_CHAN (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     cmd          CHAR(1) NULL,
     recstat      CHAR(1) NULL,
@@ -708,7 +720,7 @@ CREATE TABLE tsip_archive.ArchiveFE_CHAN (
 );
 GO
 
-CREATE INDEX IX_ArchiveFE_CHAN_RunKey ON tsip_archive.ArchiveFE_CHAN (RunKey);
+CREATE INDEX IX_ArchiveFE_CHAN_TQ_Job ON tsip_archive.ArchiveFE_CHAN (TQ_Job);
 GO
 
 -- Archive table for FE_CLOC (Location change history)
@@ -719,7 +731,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFE_CLOC (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     newlocation  CHAR(10) NULL,
     oldlocation  CHAR(10) NULL,
@@ -729,7 +742,7 @@ CREATE TABLE tsip_archive.ArchiveFE_CLOC (
 );
 GO
 
-CREATE INDEX IX_ArchiveFE_CLOC_RunKey ON tsip_archive.ArchiveFE_CLOC (RunKey);
+CREATE INDEX IX_ArchiveFE_CLOC_TQ_Job ON tsip_archive.ArchiveFE_CLOC (TQ_Job);
 GO
 
 -- Archive table for FE_CCAL (Call sign change history)
@@ -740,7 +753,8 @@ GO
 
 CREATE TABLE tsip_archive.ArchiveFE_CCAL (
     ArchiveId    BIGINT IDENTITY(1,1) NOT NULL,
-    RunKey       NVARCHAR(128) NOT NULL,
+    TQ_Job       INT NOT NULL,
+    RunKey       NVARCHAR(128) NULL,
     PdfName      NVARCHAR(128) NOT NULL,
     newcallsign  CHAR(9) NULL,
     oldcallsign  CHAR(9) NULL,
@@ -749,17 +763,20 @@ CREATE TABLE tsip_archive.ArchiveFE_CCAL (
 );
 GO
 
-CREATE INDEX IX_ArchiveFE_CCAL_RunKey ON tsip_archive.ArchiveFE_CCAL (RunKey);
+CREATE INDEX IX_ArchiveFE_CCAL_TQ_Job ON tsip_archive.ArchiveFE_CCAL (TQ_Job);
 GO
 
 PRINT 'Schema tsip_archive created with all archive tables:';
 PRINT '';
-PRINT 'TT (TSIP Results):';
+PRINT 'TT (TSIP Results) - Archived when TT tables are dropped (DDL trigger):';
 PRINT '  - ArchiveTT_PARM, ArchiveTT_SITE, ArchiveTT_ANTE, ArchiveTT_CHAN';
+PRINT '  - Linked by RunKey (e.g., "test_run01")';
 PRINT '';
-PRINT 'FT (TS Source - 6 tables captured at run completion):';
+PRINT 'FT (TS Source - 6 tables) - Archived when job is queued (INSERT trigger on tsip_queue):';
 PRINT '  - ArchiveFT_TITL, ArchiveFT_SHRL, ArchiveFT_SITE, ArchiveFT_ANTE, ArchiveFT_CHAN, ArchiveFT_CHNG_CALL';
+PRINT '  - Linked by TQ_Job (queue job ID)';
 PRINT '';
-PRINT 'FE (ES Source - 8 tables captured at run completion):';
+PRINT 'FE (ES Source - 8 tables) - Archived when job is queued (INSERT trigger on tsip_queue):';
 PRINT '  - ArchiveFE_TITL, ArchiveFE_SHRL, ArchiveFE_SITE, ArchiveFE_AZIM, ArchiveFE_ANTE, ArchiveFE_CHAN, ArchiveFE_CLOC, ArchiveFE_CCAL';
+PRINT '  - Linked by TQ_Job (queue job ID)';
 GO
