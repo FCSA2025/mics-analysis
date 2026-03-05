@@ -19,6 +19,26 @@ PRINT '=========================================================================
 PRINT '';
 
 -- =============================================================================
+-- Prerequisite Check
+-- =============================================================================
+PRINT 'Checking prerequisites...';
+
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'tsip_archive')
+    PRINT 'WARNING: tsip_archive schema not found - run 00_create_schema_and_archive_tables.sql first';
+
+IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'tsip_archive.fn_GetSchemaFromMicsID'))
+    PRINT 'WARNING: fn_GetSchemaFromMicsID function not found - run 03_create_schema_lookup_function.sql first';
+
+IF NOT EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'trg_ArchiveTT_OnDropTable' AND parent_class = 0)
+    PRINT 'WARNING: trg_ArchiveTT_OnDropTable DDL trigger not found - run 02_create_drop_trigger.sql first';
+
+IF NOT EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'trg_ArchiveFTFE_OnQueueInsert')
+    PRINT 'WARNING: trg_ArchiveFTFE_OnQueueInsert trigger not found - run 04_create_queue_insert_trigger.sql first';
+
+PRINT '';
+GO
+
+-- =============================================================================
 -- PART 0: Create all test data (TT, FT, FE tables)
 -- =============================================================================
 PRINT '==============================================================================';
@@ -27,8 +47,9 @@ PRINT '=========================================================================
 PRINT '';
 
 -- Drop existing test tables if they exist (without triggering archive)
--- Disable DDL trigger temporarily to avoid archiving during cleanup
-DISABLE TRIGGER trg_ArchiveTT_OnDropTable ON DATABASE;
+-- Disable DDL trigger temporarily to avoid archiving during cleanup (if it exists)
+IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'trg_ArchiveTT_OnDropTable' AND parent_class = 0)
+    DISABLE TRIGGER trg_ArchiveTT_OnDropTable ON DATABASE;
 GO
 
 PRINT 'Cleaning up any existing test tables...';
@@ -61,8 +82,9 @@ IF OBJECT_ID(N'bchy.fe_envproj_cloc', N'U') IS NOT NULL DROP TABLE bchy.fe_envpr
 IF OBJECT_ID(N'bchy.fe_envproj_ccal', N'U') IS NOT NULL DROP TABLE bchy.fe_envproj_ccal;
 GO
 
--- Re-enable DDL trigger
-ENABLE TRIGGER trg_ArchiveTT_OnDropTable ON DATABASE;
+-- Re-enable DDL trigger (if it exists)
+IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = 'trg_ArchiveTT_OnDropTable' AND parent_class = 0)
+    ENABLE TRIGGER trg_ArchiveTT_OnDropTable ON DATABASE;
 GO
 
 PRINT 'Existing test tables cleaned up.';
