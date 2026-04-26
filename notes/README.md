@@ -104,6 +104,7 @@ Documents used by both projects:
 - [`database-tables.md`](./shared/database-tables.md) - Table schemas, naming conventions, cleanup functions
 - [`sql-server-cursorai-access.md`](./shared/sql-server-cursorai-access.md) - SQL Server CursorAiAccess login (server, password, databases)
 - [`tsip-process-flow.md`](./shared/tsip-process-flow.md) - High-level TSIP process flow
+- [`tsip-result-file-write-guide.md`](./shared/tsip-result-file-write-guide.md) - Detailed TSIP result file write process and filename patterns
 
 ---
 

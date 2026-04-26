@@ -1,0 +1,80 @@
+-- =============================================================================
+-- 07_disable_all_archive_triggers.sql
+-- Temporarily disables:
+--   (1) Every enabled trigger on web.tsip_queue (any name — covers FT/FE queue
+--       insert trigger plus any others you may have on that table)
+--   (2) Optional archive DDL triggers on the database, if present:
+--         trg_ArchiveTT_OnDropTable      (TT drop / rollback archive)
+--         trg_ArchiveFtFe_OnDropTable     (FT/FE drop / rollback — see ft-fe-archive-capture)
+--
+-- Does NOT disable other tables' triggers or non-archive DDL triggers.
+-- Pair with 08_enable_all_archive_triggers.sql to turn everything back on.
+-- =============================================================================
+
+USE [YourDatabase];  -- change to your database
+GO
+
+SET NOCOUNT ON;
+
+-- (1) All table-level triggers on web.tsip_queue (one-by-one; works on all supported SQL Server versions)
+DECLARE @trig  sysname;
+DECLARE @tsql  NVARCHAR(512);
+DECLARE @sch   sysname;
+DECLARE @tname sysname;
+
+IF OBJECT_ID(N'web.tsip_queue', N'U') IS NULL
+    PRINT '--- web.tsip_queue not found; skipping table triggers ---';
+ELSE
+BEGIN
+    SET @sch   = OBJECT_SCHEMA_NAME(OBJECT_ID(N'web.tsip_queue', N'U'));
+    SET @tname = OBJECT_NAME(OBJECT_ID(N'web.tsip_queue', N'U'));
+
+    IF NOT EXISTS (
+        SELECT 1 FROM sys.triggers t
+        WHERE t.parent_id = OBJECT_ID(N'web.tsip_queue', N'U') AND t.is_disabled = 0
+    )
+        PRINT '--- No enabled triggers on web.tsip_queue (nothing to disable) ---';
+    ELSE
+    BEGIN
+        PRINT '--- Disabling enabled triggers on web.tsip_queue ---';
+        DECLARE c CURSOR LOCAL FAST_FORWARD FOR
+        SELECT t.name
+        FROM sys.triggers t
+        WHERE t.parent_id = OBJECT_ID(N'web.tsip_queue', N'U') AND t.is_disabled = 0;
+
+        OPEN c;
+        FETCH NEXT FROM c INTO @trig;
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            SET @tsql = N'DISABLE TRIGGER ' + QUOTENAME(@sch) + N'.' + QUOTENAME(@trig) + N' ON ' + QUOTENAME(@sch) + N'.' + QUOTENAME(@tname) + N';';
+            PRINT @tsql;
+            EXEC sp_executesql @tsql;
+            FETCH NEXT FROM c INTO @trig;
+        END
+        CLOSE c;
+        DEALLOCATE c;
+    END
+END
+GO
+
+-- (2) Database-scoped archive DDL triggers (if deployed)
+IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = N'trg_ArchiveTT_OnDropTable' AND parent_id = 0 AND is_disabled = 0)
+BEGIN
+    DISABLE TRIGGER trg_ArchiveTT_OnDropTable ON DATABASE;
+    PRINT '--- Disabled: trg_ArchiveTT_OnDropTable ON DATABASE ---';
+END
+ELSE
+    PRINT '--- Skipped or already disabled: trg_ArchiveTT_OnDropTable ---';
+GO
+
+IF EXISTS (SELECT 1 FROM sys.triggers WHERE name = N'trg_ArchiveFtFe_OnDropTable' AND parent_id = 0 AND is_disabled = 0)
+BEGIN
+    DISABLE TRIGGER trg_ArchiveFtFe_OnDropTable ON DATABASE;
+    PRINT '--- Disabled: trg_ArchiveFtFe_OnDropTable ON DATABASE ---';
+END
+ELSE
+    PRINT '--- Skipped or already disabled: trg_ArchiveFtFe_OnDropTable ---';
+GO
+
+PRINT 'Done. Re-run 08_enable_all_archive_triggers.sql when ready to re-enable.';
+GO
